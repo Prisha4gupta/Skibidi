@@ -42,13 +42,7 @@ struct CreateCommunityView: View {
                     togglesSection
                     
 
-                    Button {
-                    } label: {
-                        Text("Add more")
-                            .font(.subheadline.weight(.medium))
-                            .foregroundStyle(.blue)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
+
                     
                     Text("Choose the content you want to share to fit. It's your choice.")
                         .font(.caption)
@@ -91,7 +85,7 @@ struct CreateCommunityView: View {
                             .foregroundStyle(.white)
                             .padding(.horizontal, 18)
                             .padding(.vertical, 7)
-                            .background(canCreate ? Color.accentCoral : Color(.systemGray4))
+                            .background(canCreate ? Color.blue : Color(.systemGray4))
                             .clipShape(Capsule())
                     }
                     .disabled(!canCreate)
@@ -124,11 +118,6 @@ struct CreateCommunityView: View {
 
     private var extensionsSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Extensions")
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.secondary)
-            
-
             HStack {
                 Text("Type of community")
                     .font(.body)

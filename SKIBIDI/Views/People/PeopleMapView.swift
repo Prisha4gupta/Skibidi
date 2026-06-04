@@ -228,6 +228,7 @@ struct EmergencySOSView: View {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Emergency SOS")
                         .font(.title2.bold())
+                    
 
                     Text("Send an urgent message to a group or everyone.")
                         .font(.subheadline)
@@ -256,6 +257,7 @@ struct EmergencySOSView: View {
                                     Text(community.name)
                                 }
                             }
+                            
                         }
                     } label: {
                         HStack {
