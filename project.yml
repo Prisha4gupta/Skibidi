@@ -27,9 +27,15 @@ targets:
     platform: iOS
     sources:
       - SKIBIDI
+    entitlements:
+      path: SKIBIDI/SKIBIDI.entitlements
+      properties:
+        com.apple.developer.healthkit: true
+        com.apple.developer.healthkit.access: []
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.skibidi.app
         INFOPLIST_KEY_CFBundleDisplayName: SKIBIDI
         TARGETED_DEVICE_FAMILY: "1"
         SWIFT_STRICT_CONCURRENCY: minimal
+        INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription: "SKIBIDI keeps your community updated on your whereabouts while you're moving."

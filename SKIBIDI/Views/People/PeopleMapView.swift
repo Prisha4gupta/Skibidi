@@ -23,13 +23,13 @@ struct PeopleMapView: View {
                             }
                     }
                 }
-                UserAnnotation()
             }
             .mapStyle(.standard(elevation: .realistic))
             .mapControls {
                 MapCompass()
             }
             .ignoresSafeArea()
+            .onAppear { viewModel.onAppear() }
  
             VStack {
                 HStack {
@@ -43,18 +43,13 @@ struct PeopleMapView: View {
                         mapButton(icon: "gearshape.fill") {
                             showingSettings = true
                         }
-                        
+
                         mapButton(icon: "location.fill") {
                             withAnimation {
-                                viewModel.mapCameraPosition = .region(
-                                    MKCoordinateRegion(
-                                        center: MockDataService.shared.mapCenter,
-                                        span: MKCoordinateSpan(latitudeDelta: 0.15, longitudeDelta: 0.15)
-                                    )
-                                )
+                                viewModel.recenterOnCurrentUser()
                             }
                         }
-                        
+
                         mapButton(icon: "chart.bar.fill") {
                             if let community = viewModel.communities.first {
                                 viewModel.selectedCommunity = community
@@ -152,11 +147,19 @@ struct CommunityPinView: View {
     let user: User
     let sosMessage: String?
     @State private var isAnimating = false
-    
+
+    /// Location frozen at last-known spot — render the pin dimmed and static.
+    private var isLocationPaused: Bool { user.locationSharing.isStale }
+
+    /// Ring reflects health: live/last-known energy color, or grey when health is never shared.
     private var pinColor: Color {
-        Color.energyColor(for: user.healthSnapshot.energyScore)
+        user.displayedEnergyScore.map { Color.energyColor(for: $0) } ?? Color(.systemGray3)
     }
-    
+
+    private var ringColor: Color {
+        sosMessage == nil ? pinColor : Color.energyCritical
+    }
+
     var body: some View {
         VStack(spacing: 6) {
             if let sosMessage {
@@ -180,14 +183,27 @@ struct CommunityPinView: View {
             EmojiAvatarView(
                 emoji: user.emoji,
                 size: 36,
-                ringColor: sosMessage == nil ? pinColor : Color.energyCritical,
+                ringColor: ringColor,
                 ringWidth: 2.5,
                 backgroundColor: .white
             )
             .scaleEffect(isAnimating ? 1.15 : 1.0)
-            .shadow(color: (sosMessage == nil ? pinColor : Color.energyCritical).opacity(0.3), radius: 6, x: 0, y: 3)
+            .shadow(color: ringColor.opacity(0.3), radius: 6, x: 0, y: 3)
+            // A paused member appears greyed-out and carries a small "frozen" badge.
+            .opacity(isLocationPaused ? 0.55 : 1.0)
+            .overlay(alignment: .topTrailing) {
+                if isLocationPaused {
+                    Image(systemName: "pause.circle.fill")
+                        .font(.system(size: 15, weight: .bold))
+                        .foregroundStyle(.white, Color(.systemGray))
+                        .background(Circle().fill(.white).padding(2))
+                        .offset(x: 4, y: -4)
+                }
+            }
         }
         .onAppear {
+            // Only live locations pulse; paused pins stay still to read as "not updating".
+            guard !isLocationPaused else { return }
             withAnimation(
                 .easeInOut(duration: 2.0)
                 .repeatForever(autoreverses: true)
