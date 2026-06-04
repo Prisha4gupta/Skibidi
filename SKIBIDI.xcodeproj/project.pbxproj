@@ -1,0 +1,430 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		083A43BC1201F1E6C24A8F58 /* CommunitiesSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32B1E0C7AED5992839072379 /* CommunitiesSheetView.swift */; };
+		2B0BB823171E63D21C2BEE92 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C80060B74DFA0C417DF760A /* SettingsView.swift */; };
+		62138A6DDA0A8A8A9BD18523 /* CoreComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AF10A34EDA47A4D435E3FC1 /* CoreComponents.swift */; };
+		622B1499B5721DE9FE7AE05B /* ActivityRingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0531CEFB76FB3463318661D9 /* ActivityRingView.swift */; };
+		842B4FE289D6AFCF75FEB803 /* HealthComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0493BE9E24F70A6D6DD93D08 /* HealthComponents.swift */; };
+		A57B5BF3A971A61714416CF8 /* CreateCommunityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100820E49C205629BCE2BD46 /* CreateCommunityView.swift */; };
+		C96D6F65D55659806D6EE13D /* PeopleMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CA969CD3795DB8D71F7B062 /* PeopleMapView.swift */; };
+		CD1CCEEF19F96F49856A1BAC /* CommunityDetailViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A24C042A08987CA31F5AC8F /* CommunityDetailViews.swift */; };
+		D2805E1B03DFD7F864D413C8 /* ViewModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18029A820237FE81EFA8AD1D /* ViewModels.swift */; };
+		DBB45C82216F4BBB4DBEDF2B /* View+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8A540FCE403A989EB24357A /* View+Extensions.swift */; };
+		E98949BDFE134F0149A7C4CE /* ProfileViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED898E98345565D3E5AD9133 /* ProfileViews.swift */; };
+		F129534FFD0C20571C8847FF /* SKIBIDIApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38FD4D68FA47A415BC0B0D37 /* SKIBIDIApp.swift */; };
+		F6B2DBCC51435912A2571C42 /* Color+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DCD869E6E20C064056DDB48 /* Color+Extensions.swift */; };
+		FB477F2A70388FD9C355EAF5 /* MockDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B53D3A870B6D6DE12A2ECAA8 /* MockDataService.swift */; };
+		FB4F6B8BFDABD3393B866B65 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0902389740698E30F7989B4 /* Models.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		0493BE9E24F70A6D6DD93D08 /* HealthComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthComponents.swift; sourceTree = "<group>"; };
+		0531CEFB76FB3463318661D9 /* ActivityRingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityRingView.swift; sourceTree = "<group>"; };
+		100820E49C205629BCE2BD46 /* CreateCommunityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateCommunityView.swift; sourceTree = "<group>"; };
+		18029A820237FE81EFA8AD1D /* ViewModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels.swift; sourceTree = "<group>"; };
+		32B1E0C7AED5992839072379 /* CommunitiesSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommunitiesSheetView.swift; sourceTree = "<group>"; };
+		38FD4D68FA47A415BC0B0D37 /* SKIBIDIApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKIBIDIApp.swift; sourceTree = "<group>"; };
+		3C80060B74DFA0C417DF760A /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		3DCD869E6E20C064056DDB48 /* Color+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Extensions.swift"; sourceTree = "<group>"; };
+		4CA969CD3795DB8D71F7B062 /* PeopleMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeopleMapView.swift; sourceTree = "<group>"; };
+		5AF10A34EDA47A4D435E3FC1 /* CoreComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreComponents.swift; sourceTree = "<group>"; };
+		9A24C042A08987CA31F5AC8F /* CommunityDetailViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommunityDetailViews.swift; sourceTree = "<group>"; };
+		B53D3A870B6D6DE12A2ECAA8 /* MockDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockDataService.swift; sourceTree = "<group>"; };
+		B8A540FCE403A989EB24357A /* View+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+Extensions.swift"; sourceTree = "<group>"; };
+		E553EE3E845624CB756297B2 /* SKIBIDI.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = SKIBIDI.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		ED898E98345565D3E5AD9133 /* ProfileViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViews.swift; sourceTree = "<group>"; };
+		F0902389740698E30F7989B4 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		10E8CEE9FA1992B0B96F169B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				E553EE3E845624CB756297B2 /* SKIBIDI.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		19CE030ABDF9FF91B78598C4 /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				3DCD869E6E20C064056DDB48 /* Color+Extensions.swift */,
+				B8A540FCE403A989EB24357A /* View+Extensions.swift */,
+			);
+			path = Utilities;
+			sourceTree = "<group>";
+		};
+		2D19A2961F8D24F8A95BF609 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				38FD4D68FA47A415BC0B0D37 /* SKIBIDIApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		36BBB6DF41E58AA347DD9B3B /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				0531CEFB76FB3463318661D9 /* ActivityRingView.swift */,
+				5AF10A34EDA47A4D435E3FC1 /* CoreComponents.swift */,
+				0493BE9E24F70A6D6DD93D08 /* HealthComponents.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		40D0982D24C83DEF0449C1F0 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				36BBB6DF41E58AA347DD9B3B /* Components */,
+				F0F3884A0FE4D51EA9284430 /* People */,
+				BBAB2526D9B83C68DB73D6ED /* Settings */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		966AF4115E83F59BC4BA3223 = {
+			isa = PBXGroup;
+			children = (
+				DFC9D088F7081D1DA99A6224 /* SKIBIDI */,
+				10E8CEE9FA1992B0B96F169B /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		9804A37361506B548C4FA3A2 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				18029A820237FE81EFA8AD1D /* ViewModels.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		BB20421DB1C21DC9C8C9E850 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				F0902389740698E30F7989B4 /* Models.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		BBAB2526D9B83C68DB73D6ED /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				3C80060B74DFA0C417DF760A /* SettingsView.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		BEC4BF9A87C0A9275D0334D0 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				B53D3A870B6D6DE12A2ECAA8 /* MockDataService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		DFC9D088F7081D1DA99A6224 /* SKIBIDI */ = {
+			isa = PBXGroup;
+			children = (
+				2D19A2961F8D24F8A95BF609 /* App */,
+				BB20421DB1C21DC9C8C9E850 /* Models */,
+				BEC4BF9A87C0A9275D0334D0 /* Services */,
+				19CE030ABDF9FF91B78598C4 /* Utilities */,
+				9804A37361506B548C4FA3A2 /* ViewModels */,
+				40D0982D24C83DEF0449C1F0 /* Views */,
+			);
+			path = SKIBIDI;
+			sourceTree = "<group>";
+		};
+		F0F3884A0FE4D51EA9284430 /* People */ = {
+			isa = PBXGroup;
+			children = (
+				32B1E0C7AED5992839072379 /* CommunitiesSheetView.swift */,
+				9A24C042A08987CA31F5AC8F /* CommunityDetailViews.swift */,
+				100820E49C205629BCE2BD46 /* CreateCommunityView.swift */,
+				4CA969CD3795DB8D71F7B062 /* PeopleMapView.swift */,
+				ED898E98345565D3E5AD9133 /* ProfileViews.swift */,
+			);
+			path = People;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		D79EBD51FE2A823A2678001A /* SKIBIDI */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 29DB43349486D8B28572BAAE /* Build configuration list for PBXNativeTarget "SKIBIDI" */;
+			buildPhases = (
+				4A478294A4D0F3DA8F8947D7 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SKIBIDI;
+			packageProductDependencies = (
+			);
+			productName = SKIBIDI;
+			productReference = E553EE3E845624CB756297B2 /* SKIBIDI.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		B413CF33C7392C7D8DB775C8 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = 4A0CB1C2F4736BF4878FE37B /* Build configuration list for PBXProject "SKIBIDI" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 966AF4115E83F59BC4BA3223;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 10E8CEE9FA1992B0B96F169B /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D79EBD51FE2A823A2678001A /* SKIBIDI */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		4A478294A4D0F3DA8F8947D7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				622B1499B5721DE9FE7AE05B /* ActivityRingView.swift in Sources */,
+				F6B2DBCC51435912A2571C42 /* Color+Extensions.swift in Sources */,
+				083A43BC1201F1E6C24A8F58 /* CommunitiesSheetView.swift in Sources */,
+				CD1CCEEF19F96F49856A1BAC /* CommunityDetailViews.swift in Sources */,
+				62138A6DDA0A8A8A9BD18523 /* CoreComponents.swift in Sources */,
+				A57B5BF3A971A61714416CF8 /* CreateCommunityView.swift in Sources */,
+				842B4FE289D6AFCF75FEB803 /* HealthComponents.swift in Sources */,
+				FB477F2A70388FD9C355EAF5 /* MockDataService.swift in Sources */,
+				FB4F6B8BFDABD3393B866B65 /* Models.swift in Sources */,
+				C96D6F65D55659806D6EE13D /* PeopleMapView.swift in Sources */,
+				E98949BDFE134F0149A7C4CE /* ProfileViews.swift in Sources */,
+				F129534FFD0C20571C8847FF /* SKIBIDIApp.swift in Sources */,
+				2B0BB823171E63D21C2BEE92 /* SettingsView.swift in Sources */,
+				DBB45C82216F4BBB4DBEDF2B /* View+Extensions.swift in Sources */,
+				D2805E1B03DFD7F864D413C8 /* ViewModels.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		41F1D6D2278A92B5AD77D556 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_KEY_CFBundleDisplayName = SKIBIDI;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.skibidi.app;
+				SDKROOT = iphoneos;
+				SWIFT_STRICT_CONCURRENCY = minimal;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		46EF12D472528BE08ECEA389 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_KEY_CFBundleDisplayName = SKIBIDI;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.skibidi.app;
+				SDKROOT = iphoneos;
+				SWIFT_STRICT_CONCURRENCY = minimal;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		50DFA22B9389DF3DFC2EDA9C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "SKIBIDI reads your health data to share wellness metrics with your travel community.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "SKIBIDI writes health data to track your wellness activities.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "SKIBIDI needs your location to show you on the map and share with your travel community.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		BC1F741067BFDE86A09B2048 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "SKIBIDI reads your health data to share wellness metrics with your travel community.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "SKIBIDI writes health data to track your wellness activities.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "SKIBIDI needs your location to show you on the map and share with your travel community.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		29DB43349486D8B28572BAAE /* Build configuration list for PBXNativeTarget "SKIBIDI" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				41F1D6D2278A92B5AD77D556 /* Debug */,
+				46EF12D472528BE08ECEA389 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		4A0CB1C2F4736BF4878FE37B /* Build configuration list for PBXProject "SKIBIDI" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				50DFA22B9389DF3DFC2EDA9C /* Debug */,
+				BC1F741067BFDE86A09B2048 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = B413CF33C7392C7D8DB775C8 /* Project object */;
+}
