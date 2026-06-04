@@ -30,6 +30,7 @@ struct PeopleMapView: View {
             }
             .ignoresSafeArea()
             .onAppear { viewModel.onAppear() }
+            .onDisappear { viewModel.onDisappear() }
  
             VStack {
                 HStack {

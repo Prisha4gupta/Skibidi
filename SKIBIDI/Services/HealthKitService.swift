@@ -11,6 +11,9 @@ import HealthKit
 final class HealthKitService {
     private let store = HKHealthStore()
 
+    /// Live step-count observer; held so we can stop it when updates are no longer needed.
+    private var stepObserverQuery: HKObserverQuery?
+
     /// HealthKit is unavailable on some devices (e.g. iPad); callers fall back to mock data.
     var isAvailable: Bool { HKHealthStore.isHealthDataAvailable() }
 
@@ -66,6 +69,36 @@ final class HealthKitService {
         if let sleep = await sleepValue { snapshot.sleepHours = sleep.rounded(toPlaces: 1) }
 
         return snapshot
+    }
+
+    // MARK: - Live updates
+
+    /// Starts a HealthKit observer that fires `onChange` whenever new step samples are written
+    /// (e.g. as the user keeps walking), so the UI can refresh without relaunching the app.
+    /// Safe to call repeatedly — any existing observer is stopped first.
+    func startStepUpdates(_ onChange: @escaping @MainActor () -> Void) {
+        guard isAvailable,
+              let stepType = HKObjectType.quantityType(forIdentifier: .stepCount) else { return }
+
+        stopStepUpdates()
+
+        let query = HKObserverQuery(sampleType: stepType, predicate: nil) { _, completionHandler, error in
+            if error == nil {
+                Task { @MainActor in onChange() }
+            }
+            // Let HealthKit know we've handled this update.
+            completionHandler()
+        }
+        store.execute(query)
+        stepObserverQuery = query
+    }
+
+    /// Stops the live step observer (call from `onDisappear`).
+    func stopStepUpdates() {
+        if let query = stepObserverQuery {
+            store.stop(query)
+            stepObserverQuery = nil
+        }
     }
 
     // MARK: - Query helpers

@@ -57,7 +57,19 @@ class CommunityViewModel {
     func onAppear() {
         locationManager.requestAuthorization()
         locationManager.start()
-        Task { await loadCurrentUserHealth() }
+        Task {
+            await loadCurrentUserHealth()
+            // Keep steps (and other metrics) live: re-fetch whenever HealthKit reports new
+            // samples, so the count updates while the app stays open.
+            healthService.startStepUpdates { [weak self] in
+                Task { await self?.loadCurrentUserHealth() }
+            }
+        }
+    }
+
+    /// Called from the map's `.onDisappear`: stops live HealthKit updates.
+    func onDisappear() {
+        healthService.stopStepUpdates()
     }
 
     /// Folds the device owner's real HealthKit data onto their mock snapshot (mock stays the
