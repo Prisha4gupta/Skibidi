@@ -1,2 +1,6 @@
-SKIBIDI/.DS_Store
+# macOS junk
 .DS_Store
+
+# Xcode per-user state (UI layout, breakpoints, etc.) — never share these
+*.xcuserstate
+**/xcuserdata/
