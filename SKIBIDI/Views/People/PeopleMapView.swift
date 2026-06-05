@@ -50,13 +50,6 @@ struct PeopleMapView: View {
                                 viewModel.recenterOnCurrentUser()
                             }
                         }
-
-                        mapButton(icon: "chart.bar.fill") {
-                            if let community = viewModel.communities.first {
-                                viewModel.selectedCommunity = community
-                                viewModel.openDashboard()
-                            }
-                        }
                     }
                     .padding(.trailing, 16)
                     .padding(.top, 16)

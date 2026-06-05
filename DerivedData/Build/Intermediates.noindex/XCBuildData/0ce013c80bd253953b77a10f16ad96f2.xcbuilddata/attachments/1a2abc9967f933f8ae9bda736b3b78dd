@@ -26,6 +26,36 @@
     "swift-dependencies" : "/Users/prisha/Desktop/skibidi/DerivedData/Build/Intermediates.noindex/SKIBIDI.build/Debug-iphoneos/SKIBIDI.build/Objects-normal/arm64/Models.swiftdeps",
     "swiftmodule" : "/Users/prisha/Desktop/skibidi/DerivedData/Build/Intermediates.noindex/SKIBIDI.build/Debug-iphoneos/SKIBIDI.build/Objects-normal/arm64/Models~partial.swiftmodule"
   },
+  "/Users/prisha/Desktop/skibidi/SKIBIDI/Services/CloudKitSmokeTest.swift" : {
+    "const-values" : "/Users/prisha/Desktop/skibidi/DerivedData/Build/Intermediates.noindex/SKIBIDI.build/Debug-iphoneos/SKIBIDI.build/Objects-normal/arm64/CloudKitSmokeTest.swiftconstvalues",
+    "dependencies" : "/Users/prisha/Desktop/skibidi/DerivedData/Build/Intermediates.noindex/SKIBIDI.build/Debug-iphoneos/SKIBIDI.build/Objects-normal/arm64/CloudKitSmokeTest.d",
+    "diagnostics" : "/Users/prisha/Desktop/skibidi/DerivedData/Build/Intermediates.noindex/SKIBIDI.build/Debug-iphoneos/SKIBIDI.build/Objects-normal/arm64/CloudKitSmokeTest.dia",
+    "index-unit-output-path" : "/SKIBIDI.build/Debug-iphoneos/SKIBIDI.build/Objects-normal/arm64/CloudKitSmokeTest.o",
+    "llvm-bc" : "/Users/prisha/Desktop/skibidi/DerivedData/Build/Intermediates.noindex/SKIBIDI.build/Debug-iphoneos/SKIBIDI.build/Objects-normal/arm64/CloudKitSmokeTest.bc",
+    "object" : "/Users/prisha/Desktop/skibidi/DerivedData/Build/Intermediates.noindex/SKIBIDI.build/Debug-iphoneos/SKIBIDI.build/Objects-normal/arm64/CloudKitSmokeTest.o",
+    "swift-dependencies" : "/Users/prisha/Desktop/skibidi/DerivedData/Build/Intermediates.noindex/SKIBIDI.build/Debug-iphoneos/SKIBIDI.build/Objects-normal/arm64/CloudKitSmokeTest.swiftdeps",
+    "swiftmodule" : "/Users/prisha/Desktop/skibidi/DerivedData/Build/Intermediates.noindex/SKIBIDI.build/Debug-iphoneos/SKIBIDI.build/Objects-normal/arm64/CloudKitSmokeTest~partial.swiftmodule"
+  },
+  "/Users/prisha/Desktop/skibidi/SKIBIDI/Services/HealthKitService.swift" : {
+    "const-values" : "/Users/prisha/Desktop/skibidi/DerivedData/Build/Intermediates.noindex/SKIBIDI.build/Debug-iphoneos/SKIBIDI.build/Objects-normal/arm64/HealthKitService.swiftconstvalues",
+    "dependencies" : "/Users/prisha/Desktop/skibidi/DerivedData/Build/Intermediates.noindex/SKIBIDI.build/Debug-iphoneos/SKIBIDI.build/Objects-normal/arm64/HealthKitService.d",
+    "diagnostics" : "/Users/prisha/Desktop/skibidi/DerivedData/Build/Intermediates.noindex/SKIBIDI.build/Debug-iphoneos/SKIBIDI.build/Objects-normal/arm64/HealthKitService.dia",
+    "index-unit-output-path" : "/SKIBIDI.build/Debug-iphoneos/SKIBIDI.build/Objects-normal/arm64/HealthKitService.o",
+    "llvm-bc" : "/Users/prisha/Desktop/skibidi/DerivedData/Build/Intermediates.noindex/SKIBIDI.build/Debug-iphoneos/SKIBIDI.build/Objects-normal/arm64/HealthKitService.bc",
+    "object" : "/Users/prisha/Desktop/skibidi/DerivedData/Build/Intermediates.noindex/SKIBIDI.build/Debug-iphoneos/SKIBIDI.build/Objects-normal/arm64/HealthKitService.o",
+    "swift-dependencies" : "/Users/prisha/Desktop/skibidi/DerivedData/Build/Intermediates.noindex/SKIBIDI.build/Debug-iphoneos/SKIBIDI.build/Objects-normal/arm64/HealthKitService.swiftdeps",
+    "swiftmodule" : "/Users/prisha/Desktop/skibidi/DerivedData/Build/Intermediates.noindex/SKIBIDI.build/Debug-iphoneos/SKIBIDI.build/Objects-normal/arm64/HealthKitService~partial.swiftmodule"
+  },
+  "/Users/prisha/Desktop/skibidi/SKIBIDI/Services/LocationManager.swift" : {
+    "const-values" : "/Users/prisha/Desktop/skibidi/DerivedData/Build/Intermediates.noindex/SKIBIDI.build/Debug-iphoneos/SKIBIDI.build/Objects-normal/arm64/LocationManager.swiftconstvalues",
+    "dependencies" : "/Users/prisha/Desktop/skibidi/DerivedData/Build/Intermediates.noindex/SKIBIDI.build/Debug-iphoneos/SKIBIDI.build/Objects-normal/arm64/LocationManager.d",
+    "diagnostics" : "/Users/prisha/Desktop/skibidi/DerivedData/Build/Intermediates.noindex/SKIBIDI.build/Debug-iphoneos/SKIBIDI.build/Objects-normal/arm64/LocationManager.dia",
+    "index-unit-output-path" : "/SKIBIDI.build/Debug-iphoneos/SKIBIDI.build/Objects-normal/arm64/LocationManager.o",
+    "llvm-bc" : "/Users/prisha/Desktop/skibidi/DerivedData/Build/Intermediates.noindex/SKIBIDI.build/Debug-iphoneos/SKIBIDI.build/Objects-normal/arm64/LocationManager.bc",
+    "object" : "/Users/prisha/Desktop/skibidi/DerivedData/Build/Intermediates.noindex/SKIBIDI.build/Debug-iphoneos/SKIBIDI.build/Objects-normal/arm64/LocationManager.o",
+    "swift-dependencies" : "/Users/prisha/Desktop/skibidi/DerivedData/Build/Intermediates.noindex/SKIBIDI.build/Debug-iphoneos/SKIBIDI.build/Objects-normal/arm64/LocationManager.swiftdeps",
+    "swiftmodule" : "/Users/prisha/Desktop/skibidi/DerivedData/Build/Intermediates.noindex/SKIBIDI.build/Debug-iphoneos/SKIBIDI.build/Objects-normal/arm64/LocationManager~partial.swiftmodule"
+  },
   "/Users/prisha/Desktop/skibidi/SKIBIDI/Services/MockDataService.swift" : {
     "const-values" : "/Users/prisha/Desktop/skibidi/DerivedData/Build/Intermediates.noindex/SKIBIDI.build/Debug-iphoneos/SKIBIDI.build/Objects-normal/arm64/MockDataService.swiftconstvalues",
     "dependencies" : "/Users/prisha/Desktop/skibidi/DerivedData/Build/Intermediates.noindex/SKIBIDI.build/Debug-iphoneos/SKIBIDI.build/Objects-normal/arm64/MockDataService.d",
@@ -95,6 +125,16 @@
     "object" : "/Users/prisha/Desktop/skibidi/DerivedData/Build/Intermediates.noindex/SKIBIDI.build/Debug-iphoneos/SKIBIDI.build/Objects-normal/arm64/HealthComponents.o",
     "swift-dependencies" : "/Users/prisha/Desktop/skibidi/DerivedData/Build/Intermediates.noindex/SKIBIDI.build/Debug-iphoneos/SKIBIDI.build/Objects-normal/arm64/HealthComponents.swiftdeps",
     "swiftmodule" : "/Users/prisha/Desktop/skibidi/DerivedData/Build/Intermediates.noindex/SKIBIDI.build/Debug-iphoneos/SKIBIDI.build/Objects-normal/arm64/HealthComponents~partial.swiftmodule"
+  },
+  "/Users/prisha/Desktop/skibidi/SKIBIDI/Views/Components/SharingComponents.swift" : {
+    "const-values" : "/Users/prisha/Desktop/skibidi/DerivedData/Build/Intermediates.noindex/SKIBIDI.build/Debug-iphoneos/SKIBIDI.build/Objects-normal/arm64/SharingComponents.swiftconstvalues",
+    "dependencies" : "/Users/prisha/Desktop/skibidi/DerivedData/Build/Intermediates.noindex/SKIBIDI.build/Debug-iphoneos/SKIBIDI.build/Objects-normal/arm64/SharingComponents.d",
+    "diagnostics" : "/Users/prisha/Desktop/skibidi/DerivedData/Build/Intermediates.noindex/SKIBIDI.build/Debug-iphoneos/SKIBIDI.build/Objects-normal/arm64/SharingComponents.dia",
+    "index-unit-output-path" : "/SKIBIDI.build/Debug-iphoneos/SKIBIDI.build/Objects-normal/arm64/SharingComponents.o",
+    "llvm-bc" : "/Users/prisha/Desktop/skibidi/DerivedData/Build/Intermediates.noindex/SKIBIDI.build/Debug-iphoneos/SKIBIDI.build/Objects-normal/arm64/SharingComponents.bc",
+    "object" : "/Users/prisha/Desktop/skibidi/DerivedData/Build/Intermediates.noindex/SKIBIDI.build/Debug-iphoneos/SKIBIDI.build/Objects-normal/arm64/SharingComponents.o",
+    "swift-dependencies" : "/Users/prisha/Desktop/skibidi/DerivedData/Build/Intermediates.noindex/SKIBIDI.build/Debug-iphoneos/SKIBIDI.build/Objects-normal/arm64/SharingComponents.swiftdeps",
+    "swiftmodule" : "/Users/prisha/Desktop/skibidi/DerivedData/Build/Intermediates.noindex/SKIBIDI.build/Debug-iphoneos/SKIBIDI.build/Objects-normal/arm64/SharingComponents~partial.swiftmodule"
   },
   "/Users/prisha/Desktop/skibidi/SKIBIDI/Views/People/CommunitiesSheetView.swift" : {
     "const-values" : "/Users/prisha/Desktop/skibidi/DerivedData/Build/Intermediates.noindex/SKIBIDI.build/Debug-iphoneos/SKIBIDI.build/Objects-normal/arm64/CommunitiesSheetView.swiftconstvalues",

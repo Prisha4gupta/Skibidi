@@ -108,69 +108,45 @@ struct WellnessRingCard: View {
         user.displayedEnergyScore.map { Color.energyColor(for: $0) } ?? Color(.systemGray3)
     }
 
+    private var displayName: String {
+        user.isCurrentUser ? "You" : user.name
+    }
+
+    private var energyLabel: String {
+        guard let score = user.displayedEnergyScore else { return "Hidden" }
+        return score > 70 ? "High" : "Low"
+    }
+
     var body: some View {
-        HStack(spacing: 20) {
-            ZStack {
-                if user.fitnessSharing.hasData {
-                    ActivityRingView(
-                        moveProgress: user.healthSnapshot.moveProgress,
-                        exerciseProgress: user.healthSnapshot.exerciseProgress,
-                        standProgress: user.healthSnapshot.standProgress,
-                        size: 100,
-                        lineWidth: 10
-                    )
-                    .staleStyle(user.fitnessSharing.isStale)
-                } else {
-                    // Never shared fitness → empty grey ring placeholder.
-                    Circle()
-                        .stroke(Color(.systemGray5), lineWidth: 10)
-                        .frame(width: 100, height: 100)
-                }
+        HStack(alignment: .center, spacing: 16) {
+            activityRingSummary
 
-                EmojiAvatarView(
-                    emoji: user.emoji,
-                    size: 40,
-                    ringColor: healthRingColor,
-                    ringWidth: 2.5,
-                    backgroundColor: Color(.systemGray6)
-                )
-            }
-
-            if user.fitnessSharing == .never {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Fitness not shared")
-                        .font(.subheadline.weight(.semibold))
+            VStack(alignment: .leading, spacing: 14) {
+                HStack(spacing: 8) {
+                    Text(displayName)
+                        .font(.body.weight(.bold))
                         .foregroundStyle(.primary)
-                    Text("Activity rings hidden")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-            } else {
-                VStack(alignment: .leading, spacing: 8) {
-                    if user.fitnessSharing.isStale {
-                        StaleBadge()
+
+                if user.healthSharing.hasData {
+                    VStack(spacing: 10) {
+                        summaryRow(
+                            label: "Energy",
+                            value: energyLabel,
+                            color: healthRingColor
+                        )
+
+                        summaryRow(
+                            label: "Steps",
+                            value: "\(user.healthSnapshot.steps)",
+                            color: .metricSteps
+                        )
                     }
-
-                    metricRow(
-                        label: "Move",
-                        value: "\(user.healthSnapshot.moveCalories)/\(user.healthSnapshot.moveGoal) CAL",
-                        color: .moveRing
-                    )
-
-                    metricRow(
-                        label: "Exercise",
-                        value: "\(user.healthSnapshot.exerciseMinutes)/\(user.healthSnapshot.exerciseGoal) MIN",
-                        color: .exerciseRing
-                    )
-
-                    metricRow(
-                        label: "Stand",
-                        value: "\(user.healthSnapshot.standHours)/\(user.healthSnapshot.standGoal) HR",
-                        color: .standRing
-                    )
+                    .staleStyle(user.healthSharing.isStale)
+                } else {
+                    unavailableSummary(title: "Health hidden", subtitle: "Energy and steps not shared")
                 }
-                .staleStyle(user.fitnessSharing.isStale)
             }
         }
         .padding(18)
@@ -178,16 +154,59 @@ struct WellnessRingCard: View {
         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 4)
     }
-    
-    private func metricRow(label: String, value: String, color: Color) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
+
+    private var activityRingSummary: some View {
+        ZStack {
+            if user.fitnessSharing.hasData {
+                ActivityRingView(
+                    moveProgress: user.healthSnapshot.moveProgress,
+                    exerciseProgress: user.healthSnapshot.exerciseProgress,
+                    standProgress: user.healthSnapshot.standProgress,
+                    size: 104,
+                    lineWidth: 10
+                )
+                .staleStyle(user.fitnessSharing.isStale)
+            } else {
+                Circle()
+                    .stroke(Color(.systemGray5), lineWidth: 10)
+                    .frame(width: 104, height: 104)
+            }
+
+            EmojiAvatarView(
+                emoji: user.emoji,
+                size: 42,
+                ringColor: healthRingColor,
+                ringWidth: 2.5,
+                backgroundColor: Color(.systemGray6)
+            )
+        }
+        .frame(width: 110, height: 110)
+    }
+
+    private func summaryRow(label: String, value: String, color: Color) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
             Text(label)
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(.primary)
-            
+
+            Spacer(minLength: 8)
+
             Text(value)
-                .font(.caption.weight(.medium))
+                .font(.subheadline.weight(.bold))
                 .foregroundStyle(color)
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+        }
+    }
+
+    private func unavailableSummary(title: String, subtitle: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(title)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.primary)
+            Text(subtitle)
+                .font(.caption2)
+                .foregroundStyle(.secondary)
         }
     }
 }

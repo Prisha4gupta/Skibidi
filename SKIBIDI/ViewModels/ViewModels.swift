@@ -140,9 +140,14 @@ class CommunityViewModel {
     // MARK: - Actions
     func selectCommunity(_ community: Community) {
         selectedCommunity = community
-        showingPeopleList = true
+        showingDashboard = true
+        showingPeopleList = false
         showingCommunitySheet = false
         recenter(onMembersOf: community)
+    }
+
+    func membersForDashboard(in community: Community) -> [User] {
+        community.members.map { $0.isCurrentUser ? currentUser : $0 }
     }
 
     /// Centers the map on the centroid of a community's location-sharing members so the

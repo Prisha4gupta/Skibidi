@@ -136,7 +136,7 @@ struct CommunityDashboardView: View {
 
             ScrollView {
                 VStack(spacing: 14) {
-                    ForEach(community.members) { member in
+                    ForEach(viewModel.membersForDashboard(in: community)) { member in
                         Button {
                             withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
                                 viewModel.selectMember(member)
