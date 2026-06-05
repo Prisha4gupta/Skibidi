@@ -4,3 +4,6 @@
 # Xcode per-user state (UI layout, breakpoints, etc.) — never share these
 *.xcuserstate
 **/xcuserdata/
+
+# Local signing — each developer's own team ID (copy from Local.xcconfig.example)
+Local.xcconfig

@@ -14,6 +14,7 @@
 		645FF0D1D3165C22A349DF6A /* SharingComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 477494F6777169D714F43E93 /* SharingComponents.swift */; };
 		78FDFB7E00EABEDB70F877F3 /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DB0CA7AEFFB6C4F6689731F /* LocationManager.swift */; };
 		842B4FE289D6AFCF75FEB803 /* HealthComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0493BE9E24F70A6D6DD93D08 /* HealthComponents.swift */; };
+		9905B675B99D316789551434 /* CloudSharingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E747E1C8D2ABFB8AE640406 /* CloudSharingView.swift */; };
 		A57B5BF3A971A61714416CF8 /* CreateCommunityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100820E49C205629BCE2BD46 /* CreateCommunityView.swift */; };
 		A660F4F0EA5C0D54A96F4A49 /* DataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7488B6FD6F54B32033C3B186 /* DataService.swift */; };
 		A72AD5202F8F5704DEB2FC67 /* CloudKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1419608FDEC2968095F658E /* CloudKitService.swift */; };
@@ -45,6 +46,7 @@
 		5AF10A34EDA47A4D435E3FC1 /* CoreComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreComponents.swift; sourceTree = "<group>"; };
 		7488B6FD6F54B32033C3B186 /* DataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataService.swift; sourceTree = "<group>"; };
 		786091762039EE91AACCCCAE /* SKIBIDI.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SKIBIDI.entitlements; sourceTree = "<group>"; };
+		8E747E1C8D2ABFB8AE640406 /* CloudSharingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudSharingView.swift; sourceTree = "<group>"; };
 		9A24C042A08987CA31F5AC8F /* CommunityDetailViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommunityDetailViews.swift; sourceTree = "<group>"; };
 		B53D3A870B6D6DE12A2ECAA8 /* MockDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockDataService.swift; sourceTree = "<group>"; };
 		B8A540FCE403A989EB24357A /* View+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+Extensions.swift"; sourceTree = "<group>"; };
@@ -53,6 +55,7 @@
 		ED898E98345565D3E5AD9133 /* ProfileViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViews.swift; sourceTree = "<group>"; };
 		F0902389740698E30F7989B4 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		FBCF1853203F1593EC214D99 /* HealthKitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitService.swift; sourceTree = "<group>"; };
+		"TEMP_7A5EA78B-7140-495D-A7EA-5181AED786F1" /* Local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Local.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -93,6 +96,7 @@
 			isa = PBXGroup;
 			children = (
 				0531CEFB76FB3463318661D9 /* ActivityRingView.swift */,
+				8E747E1C8D2ABFB8AE640406 /* CloudSharingView.swift */,
 				5AF10A34EDA47A4D435E3FC1 /* CoreComponents.swift */,
 				0493BE9E24F70A6D6DD93D08 /* HealthComponents.swift */,
 				477494F6777169D714F43E93 /* SharingComponents.swift */,
@@ -181,6 +185,14 @@
 			path = People;
 			sourceTree = "<group>";
 		};
+		"TEMP_74A4A9BC-5AD4-4C13-948A-DA0B3FF891FA" /* Skibidi */ = {
+			isa = PBXGroup;
+			children = (
+				"TEMP_7A5EA78B-7140-495D-A7EA-5181AED786F1" /* Local.xcconfig */,
+			);
+			path = Skibidi;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -242,6 +254,7 @@
 			files = (
 				622B1499B5721DE9FE7AE05B /* ActivityRingView.swift in Sources */,
 				A72AD5202F8F5704DEB2FC67 /* CloudKitService.swift in Sources */,
+				9905B675B99D316789551434 /* CloudSharingView.swift in Sources */,
 				F6B2DBCC51435912A2571C42 /* Color+Extensions.swift in Sources */,
 				083A43BC1201F1E6C24A8F58 /* CommunitiesSheetView.swift in Sources */,
 				CD1CCEEF19F96F49856A1BAC /* CommunityDetailViews.swift in Sources */,
@@ -268,6 +281,7 @@
 /* Begin XCBuildConfiguration section */
 		41F1D6D2278A92B5AD77D556 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = "TEMP_7A5EA78B-7140-495D-A7EA-5181AED786F1" /* Local.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = SKIBIDI/SKIBIDI.entitlements;
@@ -287,6 +301,7 @@
 		};
 		46EF12D472528BE08ECEA389 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = "TEMP_7A5EA78B-7140-495D-A7EA-5181AED786F1" /* Local.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = SKIBIDI/SKIBIDI.entitlements;
@@ -341,7 +356,6 @@
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = W742UG8KZT;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -416,7 +430,6 @@
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = W742UG8KZT;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
