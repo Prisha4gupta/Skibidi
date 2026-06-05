@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		073AB2A1BEC7CC0B4C111E1E /* CloudKitSmokeTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = E708559D49428B58D77AAADE /* CloudKitSmokeTest.swift */; };
 		083A43BC1201F1E6C24A8F58 /* CommunitiesSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32B1E0C7AED5992839072379 /* CommunitiesSheetView.swift */; };
 		2B0BB823171E63D21C2BEE92 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C80060B74DFA0C417DF760A /* SettingsView.swift */; };
 		62138A6DDA0A8A8A9BD18523 /* CoreComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AF10A34EDA47A4D435E3FC1 /* CoreComponents.swift */; };
@@ -33,6 +34,7 @@
 		0DB0CA7AEFFB6C4F6689731F /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManager.swift; sourceTree = "<group>"; };
 		100820E49C205629BCE2BD46 /* CreateCommunityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateCommunityView.swift; sourceTree = "<group>"; };
 		18029A820237FE81EFA8AD1D /* ViewModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels.swift; sourceTree = "<group>"; };
+		20831262C073DA785F2D4F4B /* CloudKitArchitecture.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CloudKitArchitecture.md; sourceTree = "<group>"; };
 		32B1E0C7AED5992839072379 /* CommunitiesSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommunitiesSheetView.swift; sourceTree = "<group>"; };
 		38FD4D68FA47A415BC0B0D37 /* SKIBIDIApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKIBIDIApp.swift; sourceTree = "<group>"; };
 		3C80060B74DFA0C417DF760A /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -44,13 +46,22 @@
 		9A24C042A08987CA31F5AC8F /* CommunityDetailViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommunityDetailViews.swift; sourceTree = "<group>"; };
 		B53D3A870B6D6DE12A2ECAA8 /* MockDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockDataService.swift; sourceTree = "<group>"; };
 		B8A540FCE403A989EB24357A /* View+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+Extensions.swift"; sourceTree = "<group>"; };
-		E553EE3E845624CB756297B2 /* SKIBIDI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SKIBIDI.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E553EE3E845624CB756297B2 /* SKIBIDI.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = SKIBIDI.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E708559D49428B58D77AAADE /* CloudKitSmokeTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudKitSmokeTest.swift; sourceTree = "<group>"; };
 		ED898E98345565D3E5AD9133 /* ProfileViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViews.swift; sourceTree = "<group>"; };
 		F0902389740698E30F7989B4 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		FBCF1853203F1593EC214D99 /* HealthKitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
+		0C7E54D154C1D30BF332CE82 /* Documentation */ = {
+			isa = PBXGroup;
+			children = (
+				20831262C073DA785F2D4F4B /* CloudKitArchitecture.md */,
+			);
+			path = Documentation;
+			sourceTree = "<group>";
+		};
 		10E8CEE9FA1992B0B96F169B /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -100,6 +111,7 @@
 		966AF4115E83F59BC4BA3223 = {
 			isa = PBXGroup;
 			children = (
+				0C7E54D154C1D30BF332CE82 /* Documentation */,
 				DFC9D088F7081D1DA99A6224 /* SKIBIDI */,
 				10E8CEE9FA1992B0B96F169B /* Products */,
 			);
@@ -132,6 +144,7 @@
 		BEC4BF9A87C0A9275D0334D0 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				E708559D49428B58D77AAADE /* CloudKitSmokeTest.swift */,
 				FBCF1853203F1593EC214D99 /* HealthKitService.swift */,
 				0DB0CA7AEFFB6C4F6689731F /* LocationManager.swift */,
 				B53D3A870B6D6DE12A2ECAA8 /* MockDataService.swift */,
@@ -193,6 +206,12 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					D79EBD51FE2A823A2678001A = {
+						DevelopmentTeam = W742UG8KZT;
+						ProvisioningStyle = Automatic;
+					};
+				};
 			};
 			buildConfigurationList = 4A0CB1C2F4736BF4878FE37B /* Build configuration list for PBXProject "SKIBIDI" */;
 			developmentRegion = en;
@@ -219,6 +238,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				622B1499B5721DE9FE7AE05B /* ActivityRingView.swift in Sources */,
+				073AB2A1BEC7CC0B4C111E1E /* CloudKitSmokeTest.swift in Sources */,
 				F6B2DBCC51435912A2571C42 /* Color+Extensions.swift in Sources */,
 				083A43BC1201F1E6C24A8F58 /* CommunitiesSheetView.swift in Sources */,
 				CD1CCEEF19F96F49856A1BAC /* CommunityDetailViews.swift in Sources */,
@@ -248,21 +268,13 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = SKIBIDI/SKIBIDI.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = 6CC5V2CXMD;
 				INFOPLIST_KEY_CFBundleDisplayName = SKIBIDI;
-				INFOPLIST_KEY_NSHealthShareUsageDescription = "SKIBIDI reads your health data to share wellness metrics with your travel community.";
-				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "SKIBIDI writes health data to track your wellness activities.";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "SKIBIDI keeps your community updated on your whereabouts while you're moving.";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "SKIBIDI needs your location to show you on the map and share with your travel community.";
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.skibidi.app-jason";
+				PRODUCT_BUNDLE_IDENTIFIER = com.bpjsr.skibidi;
 				SDKROOT = iphoneos;
 				SWIFT_STRICT_CONCURRENCY = minimal;
 				TARGETED_DEVICE_FAMILY = 1;
@@ -275,21 +287,13 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = SKIBIDI/SKIBIDI.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = 6CC5V2CXMD;
 				INFOPLIST_KEY_CFBundleDisplayName = SKIBIDI;
-				INFOPLIST_KEY_NSHealthShareUsageDescription = "SKIBIDI reads your health data to share wellness metrics with your travel community.";
-				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "SKIBIDI writes health data to track your wellness activities.";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "SKIBIDI keeps your community updated on your whereabouts while you're moving.";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "SKIBIDI needs your location to show you on the map and share with your travel community.";
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.skibidi.app-jason";
+				PRODUCT_BUNDLE_IDENTIFIER = com.bpjsr.skibidi;
 				SDKROOT = iphoneos;
 				SWIFT_STRICT_CONCURRENCY = minimal;
 				TARGETED_DEVICE_FAMILY = 1;
@@ -329,9 +333,11 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = W742UG8KZT;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -402,9 +408,11 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = W742UG8KZT;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
