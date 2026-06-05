@@ -7,7 +7,6 @@ struct SKIBIDIApp: App {
     var body: some Scene {
         WindowGroup {
             PeopleMapView(viewModel: communityVM)
-                .task { await CloudKitSmokeTest.run() }   // TEMP: remove after Phase 3
         }
     }
 }
