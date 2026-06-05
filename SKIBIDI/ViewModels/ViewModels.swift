@@ -10,6 +10,13 @@ class CommunityViewModel {
     var notifications: [AppNotification]
     var currentUser: User
     var activeSOSMessages: [UUID: String] = [:]
+
+    // MARK: - Services (not observable UI state)
+    @ObservationIgnored private let locationManager = LocationManager()
+    @ObservationIgnored private let healthService = HealthKitService()
+    /// Once the user has manually moved the map (or picked a community) we stop auto-recentering
+    /// on each new location fix, so we don't fight the user's panning.
+    @ObservationIgnored private var hasAutoRecentered = false
     
     // MARK: - Navigation State
     var selectedCommunity: Community?
@@ -37,15 +44,79 @@ class CommunityViewModel {
                 span: MKCoordinateSpan(latitudeDelta: 0.15, longitudeDelta: 0.15)
             )
         )
-    }
-    
-    // MARK: - Map pins
-    var visibleMapMembers: [User] {
-        if let selectedCommunity {
-            return selectedCommunity.members
-        }
 
-        return allMapMembers
+        // React to real device-location fixes (adapted from LatestMap's LocationService).
+        locationManager.onLocationUpdate = { [weak self] coord in
+            self?.handleLocationUpdate(coord)
+        }
+    }
+
+    // MARK: - Lifecycle
+    /// Called from the map's `.onAppear`: requests location + HealthKit permission, starts
+    /// location updates, and loads the current user's real health metrics.
+    func onAppear() {
+        locationManager.requestAuthorization()
+        locationManager.start()
+        Task {
+            await loadCurrentUserHealth()
+            // Keep steps (and other metrics) live: re-fetch whenever HealthKit reports new
+            // samples, so the count updates while the app stays open.
+            healthService.startStepUpdates { [weak self] in
+                Task { await self?.loadCurrentUserHealth() }
+            }
+        }
+    }
+
+    /// Called from the map's `.onDisappear`: stops live HealthKit updates.
+    func onDisappear() {
+        healthService.stopStepUpdates()
+    }
+
+    /// Folds the device owner's real HealthKit data onto their mock snapshot (mock stays the
+    /// fallback for fields HealthKit can't supply, or when unavailable/unauthorized).
+    func loadCurrentUserHealth() async {
+        await healthService.requestAuthorization()
+        let merged = await healthService.fetchTodaySnapshot(merging: currentUser.healthSnapshot)
+        currentUser.healthSnapshot = merged
+    }
+
+    /// Updates the current user's stored coordinate and, until the user takes over the map,
+    /// recenters on their real position.
+    private func handleLocationUpdate(_ coord: CLLocationCoordinate2D) {
+        currentUser.latitude = coord.latitude
+        currentUser.longitude = coord.longitude
+
+        guard !hasAutoRecentered, selectedCommunity == nil else { return }
+        hasAutoRecentered = true
+        mapCameraPosition = .region(
+            MKCoordinateRegion(
+                center: coord,
+                span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+            )
+        )
+    }
+
+    /// Recenters the map on the current user's latest known coordinate (real fix when available,
+    /// otherwise their mock location). Backs the "locate me" button.
+    func recenterOnCurrentUser() {
+        let center = locationManager.currentLocation ?? currentUser.coordinate
+        mapCameraPosition = .region(
+            MKCoordinateRegion(
+                center: center,
+                span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+            )
+        )
+    }
+
+    // MARK: - Map pins
+    /// Pins shown on the map: the selected community's members (or everyone when none is
+    /// selected), with the current user swapped in live (real location + real health). Members
+    /// who never shared their location are excluded; paused members stay (frozen at last spot).
+    var visibleMapMembers: [User] {
+        let base = selectedCommunity?.members ?? allMapMembers
+        return base
+            .map { $0.isCurrentUser ? currentUser : $0 }
+            .filter { $0.locationSharing.hasData }   // .never → off the map; .paused/.active → shown
     }
 
     var allMapMembers: [User] {
@@ -71,6 +142,25 @@ class CommunityViewModel {
         selectedCommunity = community
         showingPeopleList = true
         showingCommunitySheet = false
+        recenter(onMembersOf: community)
+    }
+
+    /// Centers the map on the centroid of a community's location-sharing members so the
+    /// newly shown pins are in view. No-op if none share location.
+    private func recenter(onMembersOf community: Community) {
+        let shown = community.members
+            .map { $0.isCurrentUser ? currentUser : $0 }
+            .filter { $0.locationSharing.hasData }
+        guard !shown.isEmpty else { return }
+        let lat = shown.map(\.latitude).reduce(0, +) / Double(shown.count)
+        let lon = shown.map(\.longitude).reduce(0, +) / Double(shown.count)
+        hasAutoRecentered = true // selection owns the camera now; stop auto-following location
+        mapCameraPosition = .region(
+            MKCoordinateRegion(
+                center: CLLocationCoordinate2D(latitude: lat, longitude: lon),
+                span: MKCoordinateSpan(latitudeDelta: 0.08, longitudeDelta: 0.08)
+            )
+        )
     }
     
     func openDashboard() {

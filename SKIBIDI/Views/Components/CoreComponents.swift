@@ -90,7 +90,7 @@ struct MemberRowView: View {
             EmojiAvatarView(
                 emoji: user.emoji,
                 size: 42,
-                ringColor: Color.energyColor(for: user.healthSnapshot.energyScore)
+                ringColor: user.displayedEnergyScore.map { Color.energyColor(for: $0) } ?? Color(.systemGray3)
             )
             
             VStack(alignment: .leading, spacing: 2) {

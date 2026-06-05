@@ -102,44 +102,75 @@ struct MetricCardView: View {
 
 struct WellnessRingCard: View {
     let user: User
-    
+
+    /// Energy ring around the avatar reflects health sharing (grey when never shared).
+    private var healthRingColor: Color {
+        user.displayedEnergyScore.map { Color.energyColor(for: $0) } ?? Color(.systemGray3)
+    }
+
     var body: some View {
         HStack(spacing: 20) {
             ZStack {
-                ActivityRingView(
-                    moveProgress: user.healthSnapshot.moveProgress,
-                    exerciseProgress: user.healthSnapshot.exerciseProgress,
-                    standProgress: user.healthSnapshot.standProgress,
-                    size: 100,
-                    lineWidth: 10
-                )
-                
+                if user.fitnessSharing.hasData {
+                    ActivityRingView(
+                        moveProgress: user.healthSnapshot.moveProgress,
+                        exerciseProgress: user.healthSnapshot.exerciseProgress,
+                        standProgress: user.healthSnapshot.standProgress,
+                        size: 100,
+                        lineWidth: 10
+                    )
+                    .staleStyle(user.fitnessSharing.isStale)
+                } else {
+                    // Never shared fitness → empty grey ring placeholder.
+                    Circle()
+                        .stroke(Color(.systemGray5), lineWidth: 10)
+                        .frame(width: 100, height: 100)
+                }
+
                 EmojiAvatarView(
                     emoji: user.emoji,
                     size: 40,
-                    ringColor: Color.energyColor(for: user.healthSnapshot.energyScore),
+                    ringColor: healthRingColor,
                     ringWidth: 2.5,
                     backgroundColor: Color(.systemGray6)
                 )
             }
-            VStack(alignment: .leading, spacing: 8) {
-                metricRow(
-                    label: "Move",
-                    value: "\(user.healthSnapshot.moveCalories)/\(user.healthSnapshot.moveGoal) CAL",
-                    color: .moveRing
-                )
-                
-                metricRow(
-                    label: "Exercise",
-                    value: "\(user.healthSnapshot.exerciseMinutes)/\(user.healthSnapshot.exerciseGoal) MIN",
-                    color: .exerciseRing
-                )
-                
-                metricRow(
-                    label: "Stand",
-                    value: "\(user.healthSnapshot.standHours)/\(user.healthSnapshot.standGoal) HR",
-                    color: .standRing
-                )
+
+            if user.fitnessSharing == .never {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Fitness not shared")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.primary)
+                    Text("Activity rings hidden")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                VStack(alignment: .leading, spacing: 8) {
+                    if user.fitnessSharing.isStale {
+                        StaleBadge()
+                    }
+
+                    metricRow(
+                        label: "Move",
+                        value: "\(user.healthSnapshot.moveCalories)/\(user.healthSnapshot.moveGoal) CAL",
+                        color: .moveRing
+                    )
+
+                    metricRow(
+                        label: "Exercise",
+                        value: "\(user.healthSnapshot.exerciseMinutes)/\(user.healthSnapshot.exerciseGoal) MIN",
+                        color: .exerciseRing
+                    )
+
+                    metricRow(
+                        label: "Stand",
+                        value: "\(user.healthSnapshot.standHours)/\(user.healthSnapshot.standGoal) HR",
+                        color: .standRing
+                    )
+                }
+                .staleStyle(user.fitnessSharing.isStale)
             }
         }
         .padding(18)

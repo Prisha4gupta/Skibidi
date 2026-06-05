@@ -39,9 +39,12 @@ targets:
           - iCloud.com.bpjsr.skibidi
         com.apple.developer.icloud-services:
           - CloudKit
+        com.apple.developer.healthkit: true
+        com.apple.developer.healthkit.access: []
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.bpjsr.skibidi
         INFOPLIST_KEY_CFBundleDisplayName: SKIBIDI
         TARGETED_DEVICE_FAMILY: "1"
         SWIFT_STRICT_CONCURRENCY: minimal
+        INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription: "SKIBIDI keeps your community updated on your whereabouts while you're moving."

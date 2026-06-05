@@ -87,6 +87,9 @@ class MockDataService {
             ),
             latitude: -8.5200,
             longitude: 115.2800,
+            locationSharing: .active,
+            healthSharing: .paused,   // on the map, but health frozen at last reading
+            fitnessSharing: .active,
             ringColor: .purple
         )
     }()
@@ -114,6 +117,9 @@ class MockDataService {
             ),
             latitude: -8.4600,
             longitude: 115.2200,
+            locationSharing: .paused,   // frozen on the map at last known spot
+            healthSharing: .active,
+            fitnessSharing: .never,     // never shared fitness → no rings
             ringColor: .orange
         )
     }()
@@ -141,6 +147,9 @@ class MockDataService {
             ),
             latitude: -8.5400,
             longitude: 115.3000,
+            locationSharing: .never,    // never shared location → off the map entirely
+            healthSharing: .never,      // never shared health → no health data
+            fitnessSharing: .never,
             ringColor: .cyan
         )
     }()

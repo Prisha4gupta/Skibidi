@@ -21,6 +21,33 @@ enum PrivacyLevel: String, Codable, CaseIterable {
     case everyone = "Everyone"
 }
 
+// MARK: - Sharing State
+/// Per-category sharing consent for a member's location / health / fitness data.
+/// Three states, because "off" means two different things:
+/// - `.never`: never enabled — there is **no data at all** to show.
+/// - `.paused`: was enabled, then paused — show the **last received data, frozen** (stale).
+/// - `.active`: sharing live; data updates normally.
+enum SharingState: String, Codable, Hashable, CaseIterable {
+    case never
+    case paused
+    case active
+
+    /// Whether any data is available to display (paused keeps the last snapshot; never has none).
+    var hasData: Bool { self != .never }
+    /// Whether the shown data is the live, updating value.
+    var isLive: Bool { self == .active }
+    /// Whether the shown data is a frozen last-known snapshot.
+    var isStale: Bool { self == .paused }
+
+    var label: String {
+        switch self {
+        case .never: return "Not shared"
+        case .paused: return "Paused · last known"
+        case .active: return "Live"
+        }
+    }
+}
+
 // MARK: - User Model
 struct User: Identifiable, Hashable {
     let id: UUID
@@ -31,9 +58,24 @@ struct User: Identifiable, Hashable {
     var healthSnapshot: HealthSnapshot
     var latitude: Double
     var longitude: Double
-    
+
+    // MARK: - Data-sharing consent
+    // What this member shares, per category. The app enforces these automatically (no settings
+    // UI): a `.never` location keeps them off the map entirely; `.paused` freezes them at their
+    // last spot; health/fitness gate the same way in profiles. Defaulted so initializers that
+    // don't specify them get a live member.
+    var locationSharing: SharingState = .active
+    var healthSharing: SharingState = .active
+    var fitnessSharing: SharingState = .active
+
     var coordinate: CLLocationCoordinate2D {
         CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+    }
+
+    /// Energy score to display, or `nil` when health isn't shared at all (`.never`).
+    /// `.paused` still returns the last-known score (rendered as stale by the UI).
+    var displayedEnergyScore: Int? {
+        healthSharing.hasData ? healthSnapshot.energyScore : nil
     }
     
     // Ring color for map pins
