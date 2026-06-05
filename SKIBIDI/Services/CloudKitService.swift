@@ -22,6 +22,12 @@ final class CloudKitService {
     /// shared zone with a per-person name.)
     static let myRecordName = "member-self"
 
+    /// Custom zone that holds the (eventually shared) community's member records.
+    /// The default zone can't be shared or change-tracked, so sharing *requires* a custom zone —
+    /// this is the foundation `CKShare` is built on. For now it's one fixed zone in the owner's
+    /// private DB; per-community zones arrive when real sharing lands.
+    static let groupZoneID = CKRecordZone.ID(zoneName: "GroupZone", ownerName: CKCurrentUserDefaultName)
+
     private let database: CKDatabase
 
     init(container: CKContainer = .default()) {
@@ -42,8 +48,9 @@ final class CloudKitService {
                 return
             }
 
+            try await ensureZoneExists()
             try await upsertMyMemberRecord(from: user)
-            print("☁️ [CloudKit] WRITE ok — \(Self.myRecordName)")
+            print("☁️ [CloudKit] WRITE ok — \(Self.myRecordName) in zone \(Self.groupZoneID.zoneName)")
 
             if let record = try await fetchMyMemberRecord() {
                 let steps = record["steps"] as? Int ?? -1
@@ -56,12 +63,21 @@ final class CloudKitService {
         }
     }
 
+    // MARK: - Zone
+
+    /// Create the custom zone if it doesn't exist yet. Saving a zone that already exists is a
+    /// harmless no-op, so this is safe to call on every launch.
+    private func ensureZoneExists() async throws {
+        let zone = CKRecordZone(zoneID: Self.groupZoneID)
+        _ = try await database.save(zone)
+    }
+
     // MARK: - Write (upsert)
 
     /// Save the owner's data to their stable record. Fetches the existing record first (so we
     /// hold the correct change tag), or creates a fresh one if none exists — i.e. an upsert.
     private func upsertMyMemberRecord(from user: User) async throws {
-        let recordID = CKRecord.ID(recordName: Self.myRecordName)
+        let recordID = CKRecord.ID(recordName: Self.myRecordName, zoneID: Self.groupZoneID)
 
         let record: CKRecord
         do {
@@ -78,7 +94,7 @@ final class CloudKitService {
 
     /// Fetch the owner's record, or `nil` if it doesn't exist yet.
     private func fetchMyMemberRecord() async throws -> CKRecord? {
-        let recordID = CKRecord.ID(recordName: Self.myRecordName)
+        let recordID = CKRecord.ID(recordName: Self.myRecordName, zoneID: Self.groupZoneID)
         do {
             return try await database.record(for: recordID)
         } catch let error as CKError where error.code == .unknownItem {
