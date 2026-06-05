@@ -10,6 +10,9 @@ class CommunityViewModel {
     var notifications: [AppNotification]
     var currentUser: User
     var activeSOSMessages: [UUID: String] = [:]
+    /// Members fetched live from the CloudKit group zone (your own record solo; everyone once
+    /// sharing is live). Empty until the first fetch completes.
+    var cloudMembers: [User] = []
 
     // MARK: - Services (not observable UI state)
     @ObservationIgnored private let locationManager = LocationManager()
@@ -39,12 +42,15 @@ class CommunityViewModel {
     init(dataService: DataService = MockDataService.shared) {
         self.communities = dataService.communities
         self.notifications = dataService.notifications
-        self.currentUser = dataService.currentUser
-        // Restore the display name the user set previously. CloudKit can't hand out the iCloud
-        // account name (privacy-gated/deprecated), so the user owns their name — see updateDisplayName.
+        // Restore the display name the user set previously, on a local copy *before* assigning —
+        // mutating the @Observable `currentUser` setter touches all of `self`, which isn't fully
+        // initialized yet. CloudKit can't hand out the iCloud name, so the user owns it (see
+        // updateDisplayName).
+        var user = dataService.currentUser
         if let savedName = UserDefaults.standard.string(forKey: Self.displayNameKey), !savedName.isEmpty {
-            self.currentUser.name = savedName
+            user.name = savedName
         }
+        self.currentUser = user
         self.mapCameraPosition = .region(
             MKCoordinateRegion(
                 center: dataService.mapCenter,
@@ -68,6 +74,8 @@ class CommunityViewModel {
             await loadCurrentUserHealth()
             // Push my freshly-loaded real data (health + location) up to my private iCloud DB.
             await cloudKit.syncMyData(currentUser)
+            // Then read the whole group back from the cloud (solo: just me; later: everyone).
+            await refreshCloudMembers()
             // Keep steps (and other metrics) live: re-fetch whenever HealthKit reports new
             // samples, so the count updates while the app stays open.
             healthService.startStepUpdates { [weak self] in
@@ -79,6 +87,52 @@ class CommunityViewModel {
     /// Called from the map's `.onDisappear`: stops live HealthKit updates.
     func onDisappear() {
         healthService.stopStepUpdates()
+    }
+
+    /// Stable id for the cloud-backed community, so refreshes update the same row instead of
+    /// adding duplicates. The mock communities keep their own random ids and are never touched.
+    private static let cloudCommunityID = UUID(uuidString: "00000000-0000-0000-0000-0000C10DC10D")!
+
+    /// Fetches all members in the CloudKit group zone, then surfaces them as a separate real
+    /// community ("My SKIBIDI Group") alongside the untouched mock ones.
+    func refreshCloudMembers() async {
+        do {
+            let fetched = try await cloudKit.fetchAllMembers()
+            // Flag my own record so the map swaps in my live data (it matches this launch's id,
+            // since syncMyData wrote it just before this fetch).
+            cloudMembers = fetched.map { member in
+                guard member.id == currentUser.id else { return member }
+                var me = member
+                me.isCurrentUser = true
+                return me
+            }
+            print("☁️ [CloudKit] fetched \(cloudMembers.count) member(s):", cloudMembers.map(\.name))
+            updateCloudCommunity()
+        } catch {
+            print("❌ [CloudKit] fetch members failed:", error)
+        }
+    }
+
+    /// Rebuilds the cloud-backed community from `cloudMembers`. Removes the old one first so the
+    /// row updates in place; drops it entirely when there are no members yet.
+    private func updateCloudCommunity() {
+        communities.removeAll { $0.id == Self.cloudCommunityID }
+        guard !cloudMembers.isEmpty else { return }
+        let cloud = Community(
+            id: Self.cloudCommunityID,
+            name: "My SKIBIDI Group",
+            type: .detail,
+            imageData: nil,
+            members: cloudMembers,
+            dateActive: Date(),
+            memberCount: cloudMembers.count,
+            isLocationSharing: true,
+            isHealthSharing: true,
+            isFitnessSharing: true,
+            hasNotification: false,
+            notificationMessage: nil
+        )
+        communities.insert(cloud, at: 0)   // show the real group first
     }
 
     // MARK: - Identity

@@ -93,7 +93,8 @@ struct PeopleListView: View {
 struct CommunityDashboardView: View {
     let community: Community
     @Bindable var viewModel: CommunityViewModel
-    
+    @State private var shareData: ShareSheetData?
+
     var body: some View {
         VStack(spacing: 0) {
             Capsule()
@@ -129,9 +130,20 @@ struct CommunityDashboardView: View {
                     }
                 }
                 .buttonStyle(.plain)
-                
+
                 Spacer()
-                
+
+                Button {
+                    Task { shareData = await viewModel.prepareGroupShare() }
+                } label: {
+                    Image(systemName: "person.badge.plus")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(.secondary)
+                        .frame(width: 28, height: 28)
+                        .background(Color(.systemGray5))
+                        .clipShape(Circle())
+                }
+
                 Button {
                     withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
                         viewModel.goBackToCommunities()
@@ -177,6 +189,10 @@ struct CommunityDashboardView: View {
         )
         .shadow(color: .black.opacity(0.08), radius: 20, x: 0, y: -5)
         .frame(maxHeight: UIScreen.main.bounds.height * 0.65)
+        .sheet(item: $shareData) { data in
+            CloudSharingView(share: data.share, container: data.container)
+                .ignoresSafeArea()
+        }
     }
 }
 

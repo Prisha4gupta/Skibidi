@@ -14,16 +14,11 @@ settings:
     # being forced on teammates, which breaks their signing. Copy Local.xcconfig.example to start.
     CODE_SIGN_STYLE: Automatic
     SWIFT_VERSION: "6.0"
-    GENERATE_INFOPLIST_FILE: YES
+    # We provide an explicit Info.plist (below) instead of generating one, because CloudKit's
+    # CKSharingSupported must be a real Boolean — the INFOPLIST_KEY_ generation path drops it.
+    GENERATE_INFOPLIST_FILE: NO
     MARKETING_VERSION: "1.0"
     CURRENT_PROJECT_VERSION: "1"
-    INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
-    INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: YES
-    INFOPLIST_KEY_UILaunchScreen_Generation: YES
-    INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: "UIInterfaceOrientationPortrait"
-    INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: "SKIBIDI needs your location to show you on the map and share with your travel community."
-    INFOPLIST_KEY_NSHealthShareUsageDescription: "SKIBIDI reads your health data to share wellness metrics with your travel community."
-    INFOPLIST_KEY_NSHealthUpdateUsageDescription: "SKIBIDI writes health data to track your wellness activities."
 
 targets:
   SKIBIDI:
@@ -32,6 +27,26 @@ targets:
     configFiles:
       Debug: Local.xcconfig
       Release: Local.xcconfig
+    info:
+      path: SKIBIDI/Info.plist
+      properties:
+        CFBundleDisplayName: SKIBIDI
+        LSRequiresIPhoneOS: true
+        # CKSharingSupported = true lets a tapped CloudKit share link open THIS app (required for
+        # accepting invites). Must be a Boolean, which is why we hand-author the plist.
+        CKSharingSupported: true
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: true
+          UISceneConfigurations: {}
+        UIApplicationSupportsIndirectInputEvents: true
+        UILaunchScreen:
+          UILaunchScreen: {}
+        UISupportedInterfaceOrientations~iphone:
+          - UIInterfaceOrientationPortrait
+        NSLocationWhenInUseUsageDescription: "SKIBIDI needs your location to show you on the map and share with your travel community."
+        NSLocationAlwaysAndWhenInUseUsageDescription: "SKIBIDI keeps your community updated on your whereabouts while you're moving."
+        NSHealthShareUsageDescription: "SKIBIDI reads your health data to share wellness metrics with your travel community."
+        NSHealthUpdateUsageDescription: "SKIBIDI writes health data to track your wellness activities."
     sources:
       - path: SKIBIDI
       - path: Documentation
@@ -49,7 +64,5 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.bpjsr.skibidi
-        INFOPLIST_KEY_CFBundleDisplayName: SKIBIDI
         TARGETED_DEVICE_FAMILY: "1"
         SWIFT_STRICT_CONCURRENCY: minimal
-        INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription: "SKIBIDI keeps your community updated on your whereabouts while you're moving."

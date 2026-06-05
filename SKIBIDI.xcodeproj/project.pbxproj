@@ -15,6 +15,7 @@
 		78FDFB7E00EABEDB70F877F3 /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DB0CA7AEFFB6C4F6689731F /* LocationManager.swift */; };
 		842B4FE289D6AFCF75FEB803 /* HealthComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0493BE9E24F70A6D6DD93D08 /* HealthComponents.swift */; };
 		9905B675B99D316789551434 /* CloudSharingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E747E1C8D2ABFB8AE640406 /* CloudSharingView.swift */; };
+		9D08B247E5316AF76EC4E714 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 277DB41FB418D0AB115876CA /* AppDelegate.swift */; };
 		A57B5BF3A971A61714416CF8 /* CreateCommunityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100820E49C205629BCE2BD46 /* CreateCommunityView.swift */; };
 		A660F4F0EA5C0D54A96F4A49 /* DataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7488B6FD6F54B32033C3B186 /* DataService.swift */; };
 		A72AD5202F8F5704DEB2FC67 /* CloudKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1419608FDEC2968095F658E /* CloudKitService.swift */; };
@@ -33,10 +34,12 @@
 /* Begin PBXFileReference section */
 		0493BE9E24F70A6D6DD93D08 /* HealthComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthComponents.swift; sourceTree = "<group>"; };
 		0531CEFB76FB3463318661D9 /* ActivityRingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityRingView.swift; sourceTree = "<group>"; };
+		0C2C5D9D06EB903EA3CAFBFD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		0DB0CA7AEFFB6C4F6689731F /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManager.swift; sourceTree = "<group>"; };
 		100820E49C205629BCE2BD46 /* CreateCommunityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateCommunityView.swift; sourceTree = "<group>"; };
 		18029A820237FE81EFA8AD1D /* ViewModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels.swift; sourceTree = "<group>"; };
 		20831262C073DA785F2D4F4B /* CloudKitArchitecture.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CloudKitArchitecture.md; sourceTree = "<group>"; };
+		277DB41FB418D0AB115876CA /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		32B1E0C7AED5992839072379 /* CommunitiesSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommunitiesSheetView.swift; sourceTree = "<group>"; };
 		38FD4D68FA47A415BC0B0D37 /* SKIBIDIApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKIBIDIApp.swift; sourceTree = "<group>"; };
 		3C80060B74DFA0C417DF760A /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -51,11 +54,11 @@
 		B53D3A870B6D6DE12A2ECAA8 /* MockDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockDataService.swift; sourceTree = "<group>"; };
 		B8A540FCE403A989EB24357A /* View+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+Extensions.swift"; sourceTree = "<group>"; };
 		C1419608FDEC2968095F658E /* CloudKitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudKitService.swift; sourceTree = "<group>"; };
-		E553EE3E845624CB756297B2 /* SKIBIDI.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = SKIBIDI.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E553EE3E845624CB756297B2 /* SKIBIDI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SKIBIDI.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED898E98345565D3E5AD9133 /* ProfileViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViews.swift; sourceTree = "<group>"; };
 		F0902389740698E30F7989B4 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		FBCF1853203F1593EC214D99 /* HealthKitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitService.swift; sourceTree = "<group>"; };
-		"TEMP_7A5EA78B-7140-495D-A7EA-5181AED786F1" /* Local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Local.xcconfig; sourceTree = "<group>"; };
+		"TEMP_6077E767-FD1A-43DA-BE6E-073BC4D47F7A" /* Local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Local.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -87,6 +90,7 @@
 		2D19A2961F8D24F8A95BF609 /* App */ = {
 			isa = PBXGroup;
 			children = (
+				277DB41FB418D0AB115876CA /* AppDelegate.swift */,
 				38FD4D68FA47A415BC0B0D37 /* SKIBIDIApp.swift */,
 			);
 			path = App;
@@ -120,6 +124,7 @@
 				0C7E54D154C1D30BF332CE82 /* Documentation */,
 				DFC9D088F7081D1DA99A6224 /* SKIBIDI */,
 				10E8CEE9FA1992B0B96F169B /* Products */,
+				D007D11F2FD296A9007717B5 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -159,9 +164,18 @@
 			path = Services;
 			sourceTree = "<group>";
 		};
+		D007D11F2FD296A9007717B5 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				"TEMP_6077E767-FD1A-43DA-BE6E-073BC4D47F7A" /* Local.xcconfig */,
+			);
+			name = "Recovered References";
+			sourceTree = "<group>";
+		};
 		DFC9D088F7081D1DA99A6224 /* SKIBIDI */ = {
 			isa = PBXGroup;
 			children = (
+				0C2C5D9D06EB903EA3CAFBFD /* Info.plist */,
 				786091762039EE91AACCCCAE /* SKIBIDI.entitlements */,
 				2D19A2961F8D24F8A95BF609 /* App */,
 				BB20421DB1C21DC9C8C9E850 /* Models */,
@@ -183,14 +197,6 @@
 				ED898E98345565D3E5AD9133 /* ProfileViews.swift */,
 			);
 			path = People;
-			sourceTree = "<group>";
-		};
-		"TEMP_74A4A9BC-5AD4-4C13-948A-DA0B3FF891FA" /* Skibidi */ = {
-			isa = PBXGroup;
-			children = (
-				"TEMP_7A5EA78B-7140-495D-A7EA-5181AED786F1" /* Local.xcconfig */,
-			);
-			path = Skibidi;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -223,7 +229,6 @@
 				LastUpgradeCheck = 1600;
 				TargetAttributes = {
 					D79EBD51FE2A823A2678001A = {
-						DevelopmentTeam = W742UG8KZT;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -253,6 +258,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				622B1499B5721DE9FE7AE05B /* ActivityRingView.swift in Sources */,
+				9D08B247E5316AF76EC4E714 /* AppDelegate.swift in Sources */,
 				A72AD5202F8F5704DEB2FC67 /* CloudKitService.swift in Sources */,
 				9905B675B99D316789551434 /* CloudSharingView.swift in Sources */,
 				F6B2DBCC51435912A2571C42 /* Color+Extensions.swift in Sources */,
@@ -281,13 +287,13 @@
 /* Begin XCBuildConfiguration section */
 		41F1D6D2278A92B5AD77D556 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = "TEMP_7A5EA78B-7140-495D-A7EA-5181AED786F1" /* Local.xcconfig */;
+			baseConfigurationReference = "TEMP_6077E767-FD1A-43DA-BE6E-073BC4D47F7A" /* Local.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = SKIBIDI/SKIBIDI.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				INFOPLIST_KEY_CFBundleDisplayName = SKIBIDI;
-				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "SKIBIDI keeps your community updated on your whereabouts while you're moving.";
+				DEVELOPMENT_TEAM = YQ299RVZTY;
+				INFOPLIST_FILE = SKIBIDI/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -301,13 +307,13 @@
 		};
 		46EF12D472528BE08ECEA389 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = "TEMP_7A5EA78B-7140-495D-A7EA-5181AED786F1" /* Local.xcconfig */;
+			baseConfigurationReference = "TEMP_6077E767-FD1A-43DA-BE6E-073BC4D47F7A" /* Local.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = SKIBIDI/SKIBIDI.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				INFOPLIST_KEY_CFBundleDisplayName = SKIBIDI;
-				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "SKIBIDI keeps your community updated on your whereabouts while you're moving.";
+				DEVELOPMENT_TEAM = YQ299RVZTY;
+				INFOPLIST_FILE = SKIBIDI/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -372,14 +378,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSHealthShareUsageDescription = "SKIBIDI reads your health data to share wellness metrics with your travel community.";
-				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "SKIBIDI writes health data to track your wellness activities.";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "SKIBIDI needs your location to show you on the map and share with your travel community.";
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				GENERATE_INFOPLIST_FILE = NO;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
@@ -440,14 +439,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSHealthShareUsageDescription = "SKIBIDI reads your health data to share wellness metrics with your travel community.";
-				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "SKIBIDI writes health data to track your wellness activities.";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "SKIBIDI needs your location to show you on the map and share with your travel community.";
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				GENERATE_INFOPLIST_FILE = NO;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
