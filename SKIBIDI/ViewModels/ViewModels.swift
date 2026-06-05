@@ -14,6 +14,7 @@ class CommunityViewModel {
     // MARK: - Services (not observable UI state)
     @ObservationIgnored private let locationManager = LocationManager()
     @ObservationIgnored private let healthService = HealthKitService()
+    @ObservationIgnored private let cloudKit = CloudKitService()
     /// Once the user has manually moved the map (or picked a community) we stop auto-recentering
     /// on each new location fix, so we don't fight the user's panning.
     @ObservationIgnored private var hasAutoRecentered = false
@@ -60,6 +61,8 @@ class CommunityViewModel {
         locationManager.start()
         Task {
             await loadCurrentUserHealth()
+            // Push my freshly-loaded real data (health + location) up to my private iCloud DB.
+            await cloudKit.syncMyData(currentUser)
             // Keep steps (and other metrics) live: re-fetch whenever HealthKit reports new
             // samples, so the count updates while the app stays open.
             healthService.startStepUpdates { [weak self] in

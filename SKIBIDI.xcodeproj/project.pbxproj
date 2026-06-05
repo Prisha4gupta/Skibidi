@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		073AB2A1BEC7CC0B4C111E1E /* CloudKitSmokeTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = E708559D49428B58D77AAADE /* CloudKitSmokeTest.swift */; };
 		083A43BC1201F1E6C24A8F58 /* CommunitiesSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32B1E0C7AED5992839072379 /* CommunitiesSheetView.swift */; };
 		2B0BB823171E63D21C2BEE92 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C80060B74DFA0C417DF760A /* SettingsView.swift */; };
 		62138A6DDA0A8A8A9BD18523 /* CoreComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AF10A34EDA47A4D435E3FC1 /* CoreComponents.swift */; };
@@ -17,6 +16,7 @@
 		842B4FE289D6AFCF75FEB803 /* HealthComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0493BE9E24F70A6D6DD93D08 /* HealthComponents.swift */; };
 		A57B5BF3A971A61714416CF8 /* CreateCommunityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100820E49C205629BCE2BD46 /* CreateCommunityView.swift */; };
 		A660F4F0EA5C0D54A96F4A49 /* DataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7488B6FD6F54B32033C3B186 /* DataService.swift */; };
+		A72AD5202F8F5704DEB2FC67 /* CloudKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1419608FDEC2968095F658E /* CloudKitService.swift */; };
 		AC4BE91DD37826692AEDAC83 /* HealthKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBCF1853203F1593EC214D99 /* HealthKitService.swift */; };
 		C96D6F65D55659806D6EE13D /* PeopleMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CA969CD3795DB8D71F7B062 /* PeopleMapView.swift */; };
 		CD1CCEEF19F96F49856A1BAC /* CommunityDetailViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A24C042A08987CA31F5AC8F /* CommunityDetailViews.swift */; };
@@ -48,8 +48,8 @@
 		9A24C042A08987CA31F5AC8F /* CommunityDetailViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommunityDetailViews.swift; sourceTree = "<group>"; };
 		B53D3A870B6D6DE12A2ECAA8 /* MockDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockDataService.swift; sourceTree = "<group>"; };
 		B8A540FCE403A989EB24357A /* View+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+Extensions.swift"; sourceTree = "<group>"; };
+		C1419608FDEC2968095F658E /* CloudKitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudKitService.swift; sourceTree = "<group>"; };
 		E553EE3E845624CB756297B2 /* SKIBIDI.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = SKIBIDI.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		E708559D49428B58D77AAADE /* CloudKitSmokeTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudKitSmokeTest.swift; sourceTree = "<group>"; };
 		ED898E98345565D3E5AD9133 /* ProfileViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViews.swift; sourceTree = "<group>"; };
 		F0902389740698E30F7989B4 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		FBCF1853203F1593EC214D99 /* HealthKitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitService.swift; sourceTree = "<group>"; };
@@ -146,7 +146,7 @@
 		BEC4BF9A87C0A9275D0334D0 /* Services */ = {
 			isa = PBXGroup;
 			children = (
-				E708559D49428B58D77AAADE /* CloudKitSmokeTest.swift */,
+				C1419608FDEC2968095F658E /* CloudKitService.swift */,
 				7488B6FD6F54B32033C3B186 /* DataService.swift */,
 				FBCF1853203F1593EC214D99 /* HealthKitService.swift */,
 				0DB0CA7AEFFB6C4F6689731F /* LocationManager.swift */,
@@ -241,7 +241,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				622B1499B5721DE9FE7AE05B /* ActivityRingView.swift in Sources */,
-				073AB2A1BEC7CC0B4C111E1E /* CloudKitSmokeTest.swift in Sources */,
+				A72AD5202F8F5704DEB2FC67 /* CloudKitService.swift in Sources */,
 				F6B2DBCC51435912A2571C42 /* Color+Extensions.swift in Sources */,
 				083A43BC1201F1E6C24A8F58 /* CommunitiesSheetView.swift in Sources */,
 				CD1CCEEF19F96F49856A1BAC /* CommunityDetailViews.swift in Sources */,
