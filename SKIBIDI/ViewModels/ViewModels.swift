@@ -33,14 +33,15 @@ class CommunityViewModel {
     // MARK: - Map State
     var mapCameraPosition: MapCameraPosition
     
-    init() {
-        let mock = MockDataService.shared
-        self.communities = mock.communities
-        self.notifications = mock.notifications
-        self.currentUser = mock.currentUser
+    /// Injected data source. Defaults to the mock so existing callers (`CommunityViewModel()`)
+    /// behave exactly as before; pass a `CloudKitService` later to go live — no other change.
+    init(dataService: DataService = MockDataService.shared) {
+        self.communities = dataService.communities
+        self.notifications = dataService.notifications
+        self.currentUser = dataService.currentUser
         self.mapCameraPosition = .region(
             MKCoordinateRegion(
-                center: mock.mapCenter,
+                center: dataService.mapCenter,
                 span: MKCoordinateSpan(latitudeDelta: 0.15, longitudeDelta: 0.15)
             )
         )
@@ -318,8 +319,8 @@ class SettingsViewModel {
     // MARK: - Communities Reference
     var communities: [Community]
     
-    init() {
-        self.communities = MockDataService.shared.communities
+    init(dataService: DataService = MockDataService.shared) {
+        self.communities = dataService.communities
     }
     
     func leaveCommunity(_ community: Community) {

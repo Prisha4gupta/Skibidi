@@ -2,8 +2,11 @@ import Foundation
 import CoreLocation
 
 /// Provides mock data for all screens matching the exact values from hi-fi designs.
+///
+/// Conforms to `DataService` — it already exposed `currentUser`, `communities`,
+/// `notifications`, and `mapCenter`, so satisfying the contract needs nothing new.
 @MainActor
-class MockDataService {
+class MockDataService: DataService {
     static let shared = MockDataService()
     
     // MARK: - Bali Area Coordinates
