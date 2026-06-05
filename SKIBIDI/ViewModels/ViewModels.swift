@@ -40,6 +40,11 @@ class CommunityViewModel {
         self.communities = dataService.communities
         self.notifications = dataService.notifications
         self.currentUser = dataService.currentUser
+        // Restore the display name the user set previously. CloudKit can't hand out the iCloud
+        // account name (privacy-gated/deprecated), so the user owns their name — see updateDisplayName.
+        if let savedName = UserDefaults.standard.string(forKey: Self.displayNameKey), !savedName.isEmpty {
+            self.currentUser.name = savedName
+        }
         self.mapCameraPosition = .region(
             MKCoordinateRegion(
                 center: dataService.mapCenter,
@@ -74,6 +79,33 @@ class CommunityViewModel {
     /// Called from the map's `.onDisappear`: stops live HealthKit updates.
     func onDisappear() {
         healthService.stopStepUpdates()
+    }
+
+    // MARK: - Identity
+    private static let displayNameKey = "userDisplayName"
+
+    /// Sets the owner's display name, persists it locally, and re-pushes to CloudKit. This is how
+    /// names work in the app: each member writes their own `displayName` into their record, and
+    /// everyone reads names from records (CloudKit no longer hands out iCloud account names).
+    func updateDisplayName(_ newName: String) {
+        let trimmed = newName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        currentUser.name = trimmed
+        UserDefaults.standard.set(trimmed, forKey: Self.displayNameKey)
+        Task { await cloudKit.syncMyData(currentUser) }
+    }
+
+    // MARK: - Sharing
+    /// Prepares (or reuses) the group's CloudKit share, so the view can present the system invite
+    /// sheet. Returns `nil` on failure (logged) — the caller simply doesn't show the sheet.
+    func prepareGroupShare() async -> ShareSheetData? {
+        do {
+            let (share, container) = try await cloudKit.fetchOrCreateShare()
+            return ShareSheetData(share: share, container: container)
+        } catch {
+            print("❌ [Share] prepare failed:", error)
+            return nil
+        }
     }
 
     /// Folds the device owner's real HealthKit data onto their mock snapshot (mock stays the
