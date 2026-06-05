@@ -1,6 +1,4 @@
 import SwiftUI
-
-/// Small pill shown next to paused (frozen) data, signalling it's a last-known snapshot, not live.
 struct StaleBadge: View {
     var text: String = "Paused · last known"
 
@@ -18,9 +16,7 @@ struct StaleBadge: View {
     }
 }
 
-/// Placeholder shown in place of a data section a member has never shared (`.never`).
 struct NotSharedCard: View {
-    /// e.g. "health" or "fitness".
     let kind: String
     var icon: String = "eye.slash.fill"
 
@@ -46,7 +42,6 @@ struct NotSharedCard: View {
 }
 
 extension View {
-    /// Dims and de-emphasizes a view when its underlying data is a frozen (paused) snapshot.
     @ViewBuilder
     func staleStyle(_ isStale: Bool) -> some View {
         if isStale {

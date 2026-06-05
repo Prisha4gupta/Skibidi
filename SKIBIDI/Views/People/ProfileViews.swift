@@ -11,6 +11,13 @@ struct MemberProfileView: View {
                 .padding(.top, 10)
             
             HStack {
+                EmojiAvatarView(
+                    emoji: member.emoji,
+                    size: 30,
+                    ringColor: member.displayedEnergyScore.map { Color.energyColor(for: $0) } ?? Color(.systemGray3),
+                    ringWidth: 2,
+                    backgroundColor: Color(.systemGray6)
+                )
                 Text(member.name)
                     .font(.title2.bold())
                 
@@ -35,13 +42,7 @@ struct MemberProfileView: View {
             
             ScrollView {
                 VStack(spacing: 16) {
-                    EmojiAvatarView(
-                        emoji: member.emoji,
-                        size: 70,
-                        ringColor: member.displayedEnergyScore.map { Color.energyColor(for: $0) } ?? Color(.systemGray3),
-                        ringWidth: 4,
-                        backgroundColor: Color(.systemGray6)
-                    )
+
 
                     if member.healthSharing == .never {
                         // Never shared → no data at all.
@@ -139,19 +140,17 @@ struct YourProfileView: View {
             
 
             HStack {
+                EmojiAvatarView(
+                    emoji: user.emoji,
+                    size: 30,
+                    ringColor: Color.energyColor(for: user.healthSnapshot.energyScore),
+                    ringWidth: 2,
+                    backgroundColor: Color(.systemGray6)
+                )
+                
                 Text(user.name)
                     .font(.title2.bold())
                 
-                Menu {
-                    Button("Account", action: {})
-                    Button("Hide activity", action: {})
-                    Button("Private mode", action: {})
-                } label: {
-                    Image(systemName: "ellipsis")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(.secondary)
-                        .frame(width: 28, height: 28)
-                }
                 
                 Spacer()
                 
@@ -174,13 +173,7 @@ struct YourProfileView: View {
             
             ScrollView {
                 VStack(spacing: 16) {
-                    EmojiAvatarView(
-                        emoji: user.emoji,
-                        size: 70,
-                        ringColor: Color.energyColor(for: user.healthSnapshot.energyScore),
-                        ringWidth: 4,
-                        backgroundColor: Color(.systemGray6)
-                    )
+
                     
                     SuggestionBanner(text: user.healthSnapshot.suggestion)
                         .padding(.horizontal, 20)
