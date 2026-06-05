@@ -9,7 +9,9 @@ options:
 
 settings:
   base:
-    DEVELOPMENT_TEAM: W742UG8KZT
+    # DEVELOPMENT_TEAM is intentionally NOT set here — each developer supplies their own via a
+    # local, gitignored Local.xcconfig (see configFiles below). This stops one person's team from
+    # being forced on teammates, which breaks their signing. Copy Local.xcconfig.example to start.
     CODE_SIGN_STYLE: Automatic
     SWIFT_VERSION: "6.0"
     GENERATE_INFOPLIST_FILE: YES
@@ -27,6 +29,9 @@ targets:
   SKIBIDI:
     type: application
     platform: iOS
+    configFiles:
+      Debug: Local.xcconfig
+      Release: Local.xcconfig
     sources:
       - path: SKIBIDI
       - path: Documentation

@@ -22,10 +22,18 @@ final class CloudKitService {
     /// shared zone with a per-person name.)
     static let myRecordName = "member-self"
 
+    /// Custom zone that holds the (eventually shared) community's member records.
+    /// The default zone can't be shared or change-tracked, so sharing *requires* a custom zone —
+    /// this is the foundation `CKShare` is built on. For now it's one fixed zone in the owner's
+    /// private DB; per-community zones arrive when real sharing lands.
+    static let groupZoneID = CKRecordZone.ID(zoneName: "GroupZone", ownerName: CKCurrentUserDefaultName)
+
+    private let container: CKContainer
     private let database: CKDatabase
 
     init(container: CKContainer = .default()) {
         // `.default()` resolves to the first container in the entitlements — iCloud.com.bpjsr.skibidi.
+        self.container = container
         self.database = container.privateCloudDatabase
     }
 
@@ -42,8 +50,9 @@ final class CloudKitService {
                 return
             }
 
+            try await ensureZoneExists()
             try await upsertMyMemberRecord(from: user)
-            print("☁️ [CloudKit] WRITE ok — \(Self.myRecordName)")
+            print("☁️ [CloudKit] WRITE ok — \(Self.myRecordName) in zone \(Self.groupZoneID.zoneName)")
 
             if let record = try await fetchMyMemberRecord() {
                 let steps = record["steps"] as? Int ?? -1
@@ -56,12 +65,52 @@ final class CloudKitService {
         }
     }
 
+    // MARK: - Zone
+
+    /// Create the custom zone if it doesn't exist yet. Saving a zone that already exists is a
+    /// harmless no-op, so this is safe to call on every launch.
+    private func ensureZoneExists() async throws {
+        let zone = CKRecordZone(zoneID: Self.groupZoneID)
+        _ = try await database.save(zone)
+    }
+
+    // MARK: - Sharing
+
+    /// Fetch the zone's existing share, or create one if the zone isn't shared yet. Returns the
+    /// share plus the container — both needed to present `UICloudSharingController`.
+    ///
+    /// This is **zone-wide** sharing: a single `CKShare` covers every record in `groupZoneID`, so
+    /// anyone who accepts the invite can read all members in the community (and write their own).
+    /// The share lives at the well-known record name `CKRecordNameZoneWideShare` inside the zone,
+    /// and a zone can only have one — so we reuse the existing one if it's already there.
+    func fetchOrCreateShare() async throws -> (CKShare, CKContainer) {
+        try await ensureZoneExists()
+
+        let shareID = CKRecord.ID(recordName: CKRecordNameZoneWideShare, zoneID: Self.groupZoneID)
+        do {
+            if let existing = try await database.record(for: shareID) as? CKShare {
+                return (existing, container)        // already shared → reuse
+            }
+        } catch let error as CKError where error.code == .unknownItem {
+            // Not shared yet — fall through and create it.
+        }
+
+        let share = CKShare(recordZoneID: Self.groupZoneID)
+        share[CKShare.SystemFieldKey.title] = "SKIBIDI Group"
+        let result = try await database.modifyRecords(saving: [share], deleting: [])
+        // Prefer the server-saved share (it carries the share URL/metadata).
+        if case .success(let saved) = result.saveResults[share.recordID], let savedShare = saved as? CKShare {
+            return (savedShare, container)
+        }
+        return (share, container)
+    }
+
     // MARK: - Write (upsert)
 
     /// Save the owner's data to their stable record. Fetches the existing record first (so we
     /// hold the correct change tag), or creates a fresh one if none exists — i.e. an upsert.
     private func upsertMyMemberRecord(from user: User) async throws {
-        let recordID = CKRecord.ID(recordName: Self.myRecordName)
+        let recordID = CKRecord.ID(recordName: Self.myRecordName, zoneID: Self.groupZoneID)
 
         let record: CKRecord
         do {
@@ -78,7 +127,7 @@ final class CloudKitService {
 
     /// Fetch the owner's record, or `nil` if it doesn't exist yet.
     private func fetchMyMemberRecord() async throws -> CKRecord? {
-        let recordID = CKRecord.ID(recordName: Self.myRecordName)
+        let recordID = CKRecord.ID(recordName: Self.myRecordName, zoneID: Self.groupZoneID)
         do {
             return try await database.record(for: recordID)
         } catch let error as CKError where error.code == .unknownItem {
@@ -127,19 +176,25 @@ final class CloudKitService {
             let id = UUID(uuidString: uuidString)
         else { return nil }
 
+        // Pull fields into typed locals first. A single 12-arg initializer of `record[x] as? T ?? d`
+        // expressions can blow up Swift's type-checker ("unable to type-check in reasonable time");
+        // independent `let`s each check trivially and read just as clearly.
+        let int: (String) -> Int = { record[$0] as? Int ?? 0 }
+        let dbl: (String) -> Double = { record[$0] as? Double ?? 0 }
+
         let snapshot = HealthSnapshot(
-            steps:            record["steps"] as? Int ?? 0,
-            stepsDistanceKm:  record["stepsDistanceKm"] as? Double ?? 0,
-            sleepHours:       record["sleepHours"] as? Double ?? 0,
-            restingHeartRate: record["restingHeartRate"] as? Int ?? 0,
-            hydrationPercent: record["hydrationPercent"] as? Int ?? 0,
-            moveCalories:     record["moveCalories"] as? Int ?? 0,
-            moveGoal:         record["moveGoal"] as? Int ?? 0,
-            exerciseMinutes:  record["exerciseMinutes"] as? Int ?? 0,
-            exerciseGoal:     record["exerciseGoal"] as? Int ?? 0,
-            standHours:       record["standHours"] as? Int ?? 0,
-            standGoal:        record["standGoal"] as? Int ?? 0,
-            activeCalories:   record["activeCalories"] as? Int ?? 0
+            steps:            int("steps"),
+            stepsDistanceKm:  dbl("stepsDistanceKm"),
+            sleepHours:       dbl("sleepHours"),
+            restingHeartRate: int("restingHeartRate"),
+            hydrationPercent: int("hydrationPercent"),
+            moveCalories:     int("moveCalories"),
+            moveGoal:         int("moveGoal"),
+            exerciseMinutes:  int("exerciseMinutes"),
+            exerciseGoal:     int("exerciseGoal"),
+            standHours:       int("standHours"),
+            standGoal:        int("standGoal"),
+            activeCalories:   int("activeCalories")
         )
 
         return User(

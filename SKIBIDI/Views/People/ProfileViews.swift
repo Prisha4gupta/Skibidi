@@ -126,6 +126,8 @@ struct MemberProfileView: View {
 struct YourProfileView: View {
     @Bindable var viewModel: CommunityViewModel
     @State private var showingMenu = false
+    @State private var showingNameEditor = false
+    @State private var draftName = ""
     
     private var user: User {
         viewModel.currentUser
@@ -150,8 +152,19 @@ struct YourProfileView: View {
                 
                 Text(user.name)
                     .font(.title2.bold())
-                
-                
+
+                Button {
+                    draftName = user.name
+                    showingNameEditor = true
+                } label: {
+                    Image(systemName: "pencil")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(.secondary)
+                        .frame(width: 24, height: 24)
+                        .background(Color(.systemGray5))
+                        .clipShape(Circle())
+                }
+
                 Spacer()
                 
                 Button {
@@ -240,6 +253,13 @@ struct YourProfileView: View {
         )
         .shadow(color: .black.opacity(0.08), radius: 20, x: 0, y: -5)
         .frame(maxHeight: UIScreen.main.bounds.height * 0.72)
+        .alert("Your name", isPresented: $showingNameEditor) {
+            TextField("Name", text: $draftName)
+            Button("Save") { viewModel.updateDisplayName(draftName) }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Shown to others in your communities.")
+        }
     }
 }
 

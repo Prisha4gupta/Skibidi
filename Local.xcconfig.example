@@ -1,0 +1,16 @@
+// ── Local signing setup (one-time, per developer) ───────────────────────────
+// 1. Copy this file to "Local.xcconfig" in the same folder (the repo root).
+//    Terminal:  cp Local.xcconfig.example Local.xcconfig
+// 2. Put YOUR own Apple Developer Team ID below.
+// 3. Re-open Xcode (or run `xcodegen generate`) and build.
+//
+// Local.xcconfig is gitignored, so your team ID never overwrites a teammate's.
+//
+// Find your Team ID:
+//   • Xcode ▸ Settings… ▸ Accounts ▸ select your Apple ID ▸ the 10-char ID in parentheses, or
+//   • Terminal:  security find-identity -v -p codesigning   (the (XXXXXXXXXX) part)
+//
+// Note: only the owner of the iCloud container (iCloud.com.bpjsr.skibidi) can run the CloudKit
+// features on a real device. Everyone else builds & runs on the Simulator just fine.
+
+DEVELOPMENT_TEAM =
