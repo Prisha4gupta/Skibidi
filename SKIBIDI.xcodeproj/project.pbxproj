@@ -8,23 +8,36 @@
 
 /* Begin PBXBuildFile section */
 		083A43BC1201F1E6C24A8F58 /* CommunitiesSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32B1E0C7AED5992839072379 /* CommunitiesSheetView.swift */; };
+		1D18A5D8435CFCF15ECE217A /* SplashAuthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 098AEA7EF2C2DF98C37A829A /* SplashAuthView.swift */; };
 		2B0BB823171E63D21C2BEE92 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C80060B74DFA0C417DF760A /* SettingsView.swift */; };
+		2CE6BA8628FFCFB023B76756 /* OnboardingFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A8F4A7D9D88D6871BF8364E /* OnboardingFlowView.swift */; };
+		4D05D8E5676FF22CB1B7A97B /* AppLogoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B68E52E5DB8CF83235FFDB9 /* AppLogoView.swift */; };
+		5294E02B2576A6EB342D5493 /* EmojiPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 681AEEA0087E98E038258BD2 /* EmojiPickerView.swift */; };
 		62138A6DDA0A8A8A9BD18523 /* CoreComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AF10A34EDA47A4D435E3FC1 /* CoreComponents.swift */; };
 		622B1499B5721DE9FE7AE05B /* ActivityRingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0531CEFB76FB3463318661D9 /* ActivityRingView.swift */; };
 		645FF0D1D3165C22A349DF6A /* SharingComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 477494F6777169D714F43E93 /* SharingComponents.swift */; };
+		6CED68F27C14CD49F5752FC9 /* ProfileSyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE02C855B4992635552733D6 /* ProfileSyncService.swift */; };
+		6F2D9D9616ABAB2C5D64D250 /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75AA6C751112360D0AD5FBBE /* AuthService.swift */; };
 		78FDFB7E00EABEDB70F877F3 /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DB0CA7AEFFB6C4F6689731F /* LocationManager.swift */; };
 		842B4FE289D6AFCF75FEB803 /* HealthComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0493BE9E24F70A6D6DD93D08 /* HealthComponents.swift */; };
+		89973177A17D55A80E9F9EA5 /* ProfileSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5158CAD409BF473D334159D7 /* ProfileSetupView.swift */; };
+		942FF1152913B2FFF7FB2282 /* PermissionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5F095FF0C071C28F4872071 /* PermissionsView.swift */; };
 		9905B675B99D316789551434 /* CloudSharingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E747E1C8D2ABFB8AE640406 /* CloudSharingView.swift */; };
+		9D08B247E5316AF76EC4E714 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 277DB41FB418D0AB115876CA /* AppDelegate.swift */; };
 		A57B5BF3A971A61714416CF8 /* CreateCommunityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100820E49C205629BCE2BD46 /* CreateCommunityView.swift */; };
 		A660F4F0EA5C0D54A96F4A49 /* DataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7488B6FD6F54B32033C3B186 /* DataService.swift */; };
 		A72AD5202F8F5704DEB2FC67 /* CloudKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1419608FDEC2968095F658E /* CloudKitService.swift */; };
 		AC4BE91DD37826692AEDAC83 /* HealthKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBCF1853203F1593EC214D99 /* HealthKitService.swift */; };
+		B6C4F4DA28259F6E20890504 /* PermissionServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46AAD6FD09F1709EA17ADC33 /* PermissionServices.swift */; };
+		C7E3443FC005340A4C1DE290 /* ProfileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BBC81DE3863FB142C9DE759 /* ProfileStore.swift */; };
 		C96D6F65D55659806D6EE13D /* PeopleMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CA969CD3795DB8D71F7B062 /* PeopleMapView.swift */; };
 		CD1CCEEF19F96F49856A1BAC /* CommunityDetailViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A24C042A08987CA31F5AC8F /* CommunityDetailViews.swift */; };
+		CFB1C4AAD60DC5F9AA284285 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 490FC804D3BB75DFFA9D570B /* Assets.xcassets */; };
 		D2805E1B03DFD7F864D413C8 /* ViewModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18029A820237FE81EFA8AD1D /* ViewModels.swift */; };
 		DBB45C82216F4BBB4DBEDF2B /* View+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8A540FCE403A989EB24357A /* View+Extensions.swift */; };
 		E98949BDFE134F0149A7C4CE /* ProfileViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED898E98345565D3E5AD9133 /* ProfileViews.swift */; };
 		F129534FFD0C20571C8847FF /* SKIBIDIApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38FD4D68FA47A415BC0B0D37 /* SKIBIDIApp.swift */; };
+		F35A96ABE3603F258D8B7659 /* OnboardingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F99DCD9A8CFF5BAEB91FB90 /* OnboardingViewModel.swift */; };
 		F6B2DBCC51435912A2571C42 /* Color+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DCD869E6E20C064056DDB48 /* Color+Extensions.swift */; };
 		FB477F2A70388FD9C355EAF5 /* MockDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B53D3A870B6D6DE12A2ECAA8 /* MockDataService.swift */; };
 		FB4F6B8BFDABD3393B866B65 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0902389740698E30F7989B4 /* Models.swift */; };
@@ -33,29 +46,43 @@
 /* Begin PBXFileReference section */
 		0493BE9E24F70A6D6DD93D08 /* HealthComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthComponents.swift; sourceTree = "<group>"; };
 		0531CEFB76FB3463318661D9 /* ActivityRingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityRingView.swift; sourceTree = "<group>"; };
+		098AEA7EF2C2DF98C37A829A /* SplashAuthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashAuthView.swift; sourceTree = "<group>"; };
+		0C2C5D9D06EB903EA3CAFBFD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		0DB0CA7AEFFB6C4F6689731F /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManager.swift; sourceTree = "<group>"; };
 		100820E49C205629BCE2BD46 /* CreateCommunityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateCommunityView.swift; sourceTree = "<group>"; };
 		18029A820237FE81EFA8AD1D /* ViewModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels.swift; sourceTree = "<group>"; };
 		20831262C073DA785F2D4F4B /* CloudKitArchitecture.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CloudKitArchitecture.md; sourceTree = "<group>"; };
+		277DB41FB418D0AB115876CA /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		32B1E0C7AED5992839072379 /* CommunitiesSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommunitiesSheetView.swift; sourceTree = "<group>"; };
 		38FD4D68FA47A415BC0B0D37 /* SKIBIDIApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKIBIDIApp.swift; sourceTree = "<group>"; };
 		3C80060B74DFA0C417DF760A /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		3DCD869E6E20C064056DDB48 /* Color+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Extensions.swift"; sourceTree = "<group>"; };
+		3F99DCD9A8CFF5BAEB91FB90 /* OnboardingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingViewModel.swift; sourceTree = "<group>"; };
+		46AAD6FD09F1709EA17ADC33 /* PermissionServices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionServices.swift; sourceTree = "<group>"; };
 		477494F6777169D714F43E93 /* SharingComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharingComponents.swift; sourceTree = "<group>"; };
+		490FC804D3BB75DFFA9D570B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		4CA969CD3795DB8D71F7B062 /* PeopleMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeopleMapView.swift; sourceTree = "<group>"; };
+		5158CAD409BF473D334159D7 /* ProfileSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileSetupView.swift; sourceTree = "<group>"; };
 		5AF10A34EDA47A4D435E3FC1 /* CoreComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreComponents.swift; sourceTree = "<group>"; };
+		681AEEA0087E98E038258BD2 /* EmojiPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmojiPickerView.swift; sourceTree = "<group>"; };
 		7488B6FD6F54B32033C3B186 /* DataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataService.swift; sourceTree = "<group>"; };
+		75AA6C751112360D0AD5FBBE /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
 		786091762039EE91AACCCCAE /* SKIBIDI.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SKIBIDI.entitlements; sourceTree = "<group>"; };
+		8A8F4A7D9D88D6871BF8364E /* OnboardingFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingFlowView.swift; sourceTree = "<group>"; };
+		8B68E52E5DB8CF83235FFDB9 /* AppLogoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLogoView.swift; sourceTree = "<group>"; };
+		8BBC81DE3863FB142C9DE759 /* ProfileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileStore.swift; sourceTree = "<group>"; };
 		8E747E1C8D2ABFB8AE640406 /* CloudSharingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudSharingView.swift; sourceTree = "<group>"; };
 		9A24C042A08987CA31F5AC8F /* CommunityDetailViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommunityDetailViews.swift; sourceTree = "<group>"; };
+		A5F095FF0C071C28F4872071 /* PermissionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionsView.swift; sourceTree = "<group>"; };
 		B53D3A870B6D6DE12A2ECAA8 /* MockDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockDataService.swift; sourceTree = "<group>"; };
 		B8A540FCE403A989EB24357A /* View+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+Extensions.swift"; sourceTree = "<group>"; };
 		C1419608FDEC2968095F658E /* CloudKitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudKitService.swift; sourceTree = "<group>"; };
-		E553EE3E845624CB756297B2 /* SKIBIDI.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = SKIBIDI.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		DE02C855B4992635552733D6 /* ProfileSyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileSyncService.swift; sourceTree = "<group>"; };
+		E553EE3E845624CB756297B2 /* SKIBIDI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SKIBIDI.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED898E98345565D3E5AD9133 /* ProfileViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViews.swift; sourceTree = "<group>"; };
 		F0902389740698E30F7989B4 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		FBCF1853203F1593EC214D99 /* HealthKitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitService.swift; sourceTree = "<group>"; };
-		"TEMP_7A5EA78B-7140-495D-A7EA-5181AED786F1" /* Local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Local.xcconfig; sourceTree = "<group>"; };
+		"TEMP_FCF3C69D-00A2-4957-B296-1B43C6979B28" /* Local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Local.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -87,9 +114,23 @@
 		2D19A2961F8D24F8A95BF609 /* App */ = {
 			isa = PBXGroup;
 			children = (
+				277DB41FB418D0AB115876CA /* AppDelegate.swift */,
 				38FD4D68FA47A415BC0B0D37 /* SKIBIDIApp.swift */,
 			);
 			path = App;
+			sourceTree = "<group>";
+		};
+		3310C275648E7A80237B1C96 /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+				8B68E52E5DB8CF83235FFDB9 /* AppLogoView.swift */,
+				681AEEA0087E98E038258BD2 /* EmojiPickerView.swift */,
+				8A8F4A7D9D88D6871BF8364E /* OnboardingFlowView.swift */,
+				A5F095FF0C071C28F4872071 /* PermissionsView.swift */,
+				5158CAD409BF473D334159D7 /* ProfileSetupView.swift */,
+				098AEA7EF2C2DF98C37A829A /* SplashAuthView.swift */,
+			);
+			path = Onboarding;
 			sourceTree = "<group>";
 		};
 		36BBB6DF41E58AA347DD9B3B /* Components */ = {
@@ -108,6 +149,7 @@
 			isa = PBXGroup;
 			children = (
 				36BBB6DF41E58AA347DD9B3B /* Components */,
+				3310C275648E7A80237B1C96 /* Onboarding */,
 				F0F3884A0FE4D51EA9284430 /* People */,
 				BBAB2526D9B83C68DB73D6ED /* Settings */,
 			);
@@ -120,12 +162,14 @@
 				0C7E54D154C1D30BF332CE82 /* Documentation */,
 				DFC9D088F7081D1DA99A6224 /* SKIBIDI */,
 				10E8CEE9FA1992B0B96F169B /* Products */,
+				D0EAC2102FD9016400CA887A /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
 		9804A37361506B548C4FA3A2 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
+				3F99DCD9A8CFF5BAEB91FB90 /* OnboardingViewModel.swift */,
 				18029A820237FE81EFA8AD1D /* ViewModels.swift */,
 			);
 			path = ViewModels;
@@ -150,18 +194,32 @@
 		BEC4BF9A87C0A9275D0334D0 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				75AA6C751112360D0AD5FBBE /* AuthService.swift */,
 				C1419608FDEC2968095F658E /* CloudKitService.swift */,
 				7488B6FD6F54B32033C3B186 /* DataService.swift */,
 				FBCF1853203F1593EC214D99 /* HealthKitService.swift */,
 				0DB0CA7AEFFB6C4F6689731F /* LocationManager.swift */,
 				B53D3A870B6D6DE12A2ECAA8 /* MockDataService.swift */,
+				46AAD6FD09F1709EA17ADC33 /* PermissionServices.swift */,
+				8BBC81DE3863FB142C9DE759 /* ProfileStore.swift */,
+				DE02C855B4992635552733D6 /* ProfileSyncService.swift */,
 			);
 			path = Services;
+			sourceTree = "<group>";
+		};
+		D0EAC2102FD9016400CA887A /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				"TEMP_FCF3C69D-00A2-4957-B296-1B43C6979B28" /* Local.xcconfig */,
+			);
+			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 		DFC9D088F7081D1DA99A6224 /* SKIBIDI */ = {
 			isa = PBXGroup;
 			children = (
+				490FC804D3BB75DFFA9D570B /* Assets.xcassets */,
+				0C2C5D9D06EB903EA3CAFBFD /* Info.plist */,
 				786091762039EE91AACCCCAE /* SKIBIDI.entitlements */,
 				2D19A2961F8D24F8A95BF609 /* App */,
 				BB20421DB1C21DC9C8C9E850 /* Models */,
@@ -185,14 +243,6 @@
 			path = People;
 			sourceTree = "<group>";
 		};
-		"TEMP_74A4A9BC-5AD4-4C13-948A-DA0B3FF891FA" /* Skibidi */ = {
-			isa = PBXGroup;
-			children = (
-				"TEMP_7A5EA78B-7140-495D-A7EA-5181AED786F1" /* Local.xcconfig */,
-			);
-			path = Skibidi;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -201,6 +251,7 @@
 			buildConfigurationList = 29DB43349486D8B28572BAAE /* Build configuration list for PBXNativeTarget "SKIBIDI" */;
 			buildPhases = (
 				4A478294A4D0F3DA8F8947D7 /* Sources */,
+				DF5BBE7DD19579B6E56C6C3B /* Resources */,
 			);
 			buildRules = (
 			);
@@ -223,7 +274,6 @@
 				LastUpgradeCheck = 1600;
 				TargetAttributes = {
 					D79EBD51FE2A823A2678001A = {
-						DevelopmentTeam = W742UG8KZT;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -247,12 +297,26 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		DF5BBE7DD19579B6E56C6C3B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CFB1C4AAD60DC5F9AA284285 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		4A478294A4D0F3DA8F8947D7 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				622B1499B5721DE9FE7AE05B /* ActivityRingView.swift in Sources */,
+				9D08B247E5316AF76EC4E714 /* AppDelegate.swift in Sources */,
+				4D05D8E5676FF22CB1B7A97B /* AppLogoView.swift in Sources */,
+				6F2D9D9616ABAB2C5D64D250 /* AuthService.swift in Sources */,
 				A72AD5202F8F5704DEB2FC67 /* CloudKitService.swift in Sources */,
 				9905B675B99D316789551434 /* CloudSharingView.swift in Sources */,
 				F6B2DBCC51435912A2571C42 /* Color+Extensions.swift in Sources */,
@@ -261,16 +325,25 @@
 				62138A6DDA0A8A8A9BD18523 /* CoreComponents.swift in Sources */,
 				A57B5BF3A971A61714416CF8 /* CreateCommunityView.swift in Sources */,
 				A660F4F0EA5C0D54A96F4A49 /* DataService.swift in Sources */,
+				5294E02B2576A6EB342D5493 /* EmojiPickerView.swift in Sources */,
 				842B4FE289D6AFCF75FEB803 /* HealthComponents.swift in Sources */,
 				AC4BE91DD37826692AEDAC83 /* HealthKitService.swift in Sources */,
 				78FDFB7E00EABEDB70F877F3 /* LocationManager.swift in Sources */,
 				FB477F2A70388FD9C355EAF5 /* MockDataService.swift in Sources */,
 				FB4F6B8BFDABD3393B866B65 /* Models.swift in Sources */,
+				2CE6BA8628FFCFB023B76756 /* OnboardingFlowView.swift in Sources */,
+				F35A96ABE3603F258D8B7659 /* OnboardingViewModel.swift in Sources */,
 				C96D6F65D55659806D6EE13D /* PeopleMapView.swift in Sources */,
+				B6C4F4DA28259F6E20890504 /* PermissionServices.swift in Sources */,
+				942FF1152913B2FFF7FB2282 /* PermissionsView.swift in Sources */,
+				89973177A17D55A80E9F9EA5 /* ProfileSetupView.swift in Sources */,
+				C7E3443FC005340A4C1DE290 /* ProfileStore.swift in Sources */,
+				6CED68F27C14CD49F5752FC9 /* ProfileSyncService.swift in Sources */,
 				E98949BDFE134F0149A7C4CE /* ProfileViews.swift in Sources */,
 				F129534FFD0C20571C8847FF /* SKIBIDIApp.swift in Sources */,
 				2B0BB823171E63D21C2BEE92 /* SettingsView.swift in Sources */,
 				645FF0D1D3165C22A349DF6A /* SharingComponents.swift in Sources */,
+				1D18A5D8435CFCF15ECE217A /* SplashAuthView.swift in Sources */,
 				DBB45C82216F4BBB4DBEDF2B /* View+Extensions.swift in Sources */,
 				D2805E1B03DFD7F864D413C8 /* ViewModels.swift in Sources */,
 			);
@@ -281,18 +354,18 @@
 /* Begin XCBuildConfiguration section */
 		41F1D6D2278A92B5AD77D556 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = "TEMP_7A5EA78B-7140-495D-A7EA-5181AED786F1" /* Local.xcconfig */;
+			baseConfigurationReference = "TEMP_FCF3C69D-00A2-4957-B296-1B43C6979B28" /* Local.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = SKIBIDI/SKIBIDI.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				INFOPLIST_KEY_CFBundleDisplayName = SKIBIDI;
-				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "SKIBIDI keeps your community updated on your whereabouts while you're moving.";
+				DEVELOPMENT_TEAM = YQ299RVZTY;
+				INFOPLIST_FILE = SKIBIDI/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.bpjsr.skibidi;
+				PRODUCT_BUNDLE_IDENTIFIER = com.bpjsr.tim;
 				SDKROOT = iphoneos;
 				SWIFT_STRICT_CONCURRENCY = minimal;
 				TARGETED_DEVICE_FAMILY = 1;
@@ -301,18 +374,18 @@
 		};
 		46EF12D472528BE08ECEA389 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = "TEMP_7A5EA78B-7140-495D-A7EA-5181AED786F1" /* Local.xcconfig */;
+			baseConfigurationReference = "TEMP_FCF3C69D-00A2-4957-B296-1B43C6979B28" /* Local.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = SKIBIDI/SKIBIDI.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				INFOPLIST_KEY_CFBundleDisplayName = SKIBIDI;
-				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "SKIBIDI keeps your community updated on your whereabouts while you're moving.";
+				DEVELOPMENT_TEAM = YQ299RVZTY;
+				INFOPLIST_FILE = SKIBIDI/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.bpjsr.skibidi;
+				PRODUCT_BUNDLE_IDENTIFIER = com.bpjsr.tim;
 				SDKROOT = iphoneos;
 				SWIFT_STRICT_CONCURRENCY = minimal;
 				TARGETED_DEVICE_FAMILY = 1;
@@ -372,14 +445,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSHealthShareUsageDescription = "SKIBIDI reads your health data to share wellness metrics with your travel community.";
-				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "SKIBIDI writes health data to track your wellness activities.";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "SKIBIDI needs your location to show you on the map and share with your travel community.";
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				GENERATE_INFOPLIST_FILE = NO;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
@@ -440,14 +506,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSHealthShareUsageDescription = "SKIBIDI reads your health data to share wellness metrics with your travel community.";
-				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "SKIBIDI writes health data to track your wellness activities.";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "SKIBIDI needs your location to show you on the map and share with your travel community.";
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				GENERATE_INFOPLIST_FILE = NO;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = NO;

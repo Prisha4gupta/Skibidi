@@ -20,6 +20,10 @@ struct CloudSharingView: UIViewControllerRepresentable {
     func makeUIViewController(context: Context) -> UICloudSharingController {
         let controller = UICloudSharingController(share: share, container: container)
         controller.delegate = context.coordinator
+        // "Anyone with the link" only — hides the invite-only (email/phone lookup) option, so
+        // sharing is always copy-link-and-send. Matches the `.readWrite` publicPermission the
+        // service sets on the share itself.
+        controller.availablePermissions = [.allowPublic, .allowReadWrite]
         return controller
     }
 

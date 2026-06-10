@@ -4,6 +4,20 @@ extension Color {
     // MARK: - Brand
     static let skibidiPurple = Color(red: 0.75, green: 0.52, blue: 0.99)
     static let skibidiPink = Color(red: 0.94, green: 0.67, blue: 0.98)
+    /// Solid onboarding/splash background blue (~#3B82F6). The brand blue used full-bleed
+    /// behind the splash, profile, and permissions screens.
+    static let skibidiBlue = Color(red: 0.23, green: 0.51, blue: 0.96)
+    /// Lighter top stop for the onboarding background gradient.
+    static let skibidiBlueLight = Color(red: 0.39, green: 0.62, blue: 0.98)
+
+    /// Full-bleed blue gradient behind the onboarding screens (light top → brand blue bottom).
+    static var skibidiBlueGradient: LinearGradient {
+        LinearGradient(
+            colors: [.skibidiBlueLight, .skibidiBlue],
+            startPoint: .top,
+            endPoint: .bottom
+        )
+    }
     
     // MARK: - Activity Ring Colors (Apple Fitness inspired)
     static let moveRing = Color(red: 0.98, green: 0.24, blue: 0.40)        // Pink-red
@@ -66,6 +80,7 @@ extension Color {
 extension ShapeStyle where Self == Color {
     static var skibidiPurple: Color { .skibidiPurple }
     static var skibidiPink: Color { .skibidiPink }
+    static var skibidiBlue: Color { .skibidiBlue }
     static var moveRing: Color { .moveRing }
     static var moveRingLight: Color { .moveRingLight }
     static var exerciseRing: Color { .exerciseRing }
