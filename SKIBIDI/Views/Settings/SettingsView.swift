@@ -44,7 +44,10 @@ struct SettingsView: View {
                             
                             settingsToggle(
                                 title: "Fitness",
-                                isOn: $settingsVM.isFitnessEnabled
+                                isOn: Binding(
+                                    get: { communityVM.currentUser.fitnessSharing.hasData },
+                                    set: { communityVM.setFitnessSharing($0) }
+                                )
                             )
                             
                             Divider().padding(.vertical, 8)
@@ -52,7 +55,10 @@ struct SettingsView: View {
                            
                             settingsToggle(
                                 title: "Health",
-                                isOn: $settingsVM.isHealthEnabled
+                                isOn: Binding(
+                                    get: { communityVM.currentUser.healthSharing.hasData },
+                                    set: { communityVM.setHealthSharing($0) }
+                                )
                             )
                             
                             Divider().padding(.vertical, 8)
@@ -77,7 +83,10 @@ struct SettingsView: View {
                             
                             settingsToggle(
                                 title: "Share My Location",
-                                isOn: $settingsVM.isLocationSharingEnabled
+                                isOn: Binding(
+                                    get: { communityVM.currentUser.locationSharing.hasData },
+                                    set: { communityVM.setLocationSharing($0) }
+                                )
                             )
                         }
                     }

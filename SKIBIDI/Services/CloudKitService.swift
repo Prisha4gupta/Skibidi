@@ -21,11 +21,16 @@ final class CloudKitService {
     /// private DB; per-community zones arrive when real sharing lands.
     static let groupZoneID = CKRecordZone.ID(zoneName: "GroupZone", ownerName: CKCurrentUserDefaultName)
 
+    /// Explicit container id. We reference it directly instead of `CKContainer.default()` because
+    /// the bundle id (com.bpjsr.tim) no longer matches the container name — the container was set
+    /// up as `iCloud.com.bpjsr.skibidi` and kept (with all its schema) through the rename.
+    /// `.default()` would resolve to `iCloud.<bundle-id>` and miss it.
+    nonisolated static let containerID = "iCloud.com.bpjsr.skibidi"
+
     private let container: CKContainer
     private let database: CKDatabase
 
-    init(container: CKContainer = .default()) {
-        // `.default()` resolves to the first container in the entitlements — iCloud.com.bpjsr.skibidi.
+    init(container: CKContainer = CKContainer(identifier: CloudKitService.containerID)) {
         self.container = container
         self.database = container.privateCloudDatabase
     }
@@ -68,7 +73,7 @@ final class CloudKitService {
     /// Never throws — failures are logged, because a sync hiccup shouldn't crash the app.
     func syncMyData(_ user: User) async {
         do {
-            let status = try await CKContainer.default().accountStatus()
+            let status = try await container.accountStatus()
             guard status == .available else {
                 print("☁️ [CloudKit] iCloud not available (status \(status.rawValue)). Sign in via Settings.")
                 return
@@ -150,12 +155,16 @@ final class CloudKitService {
     /// others join and write theirs, it's everyone's.
     /// Requires the `recordName` queryable index in the CloudKit schema (added in the Console).
     func fetchAllMembers() async throws -> [User] {
+        let myName = try await myRecordName()
         let loc = await resolveGroupLocation()
         let query = CKQuery(recordType: Self.memberRecordType, predicate: NSPredicate(value: true))
         let (matches, _) = try await loc.database.records(matching: query, inZoneWith: loc.zoneID)
         return matches.compactMap { _, result in
-            guard case .success(let record) = result else { return nil }
-            return Self.decode(record)
+            guard case .success(let record) = result, var user = Self.decode(record) else { return nil }
+            // Identify "me" by the stable per-user record name (not a per-launch random id), so it
+            // holds across devices and relaunches.
+            if record.recordID.recordName == myName { user.isCurrentUser = true }
+            return user
         }
     }
 
@@ -164,6 +173,9 @@ final class CloudKitService {
     /// Translate a `User` into CloudKit fields. A `CKRecord` is dictionary-like; Swift `Int`,
     /// `Double`, and `String` bridge to CloudKit number/string types automatically. Enums are
     /// stored as their raw `String` so they survive the round-trip unambiguously.
+    /// Each category is gated by the user's sharing flag: when a category is OFF, its fields are
+    /// set to `nil`, which **deletes them from the cloud** on save (not just hidden in the UI) —
+    /// that's what makes the privacy toggle real. Identity, profile, and the flags always sync.
     static func encode(_ user: User, into record: CKRecord) {
         record["userUUID"]        = user.id.uuidString          // transient app-local id (per launch)
         record["appleUserID"]     = user.appleUserID            // stable owner identity across launches
@@ -171,25 +183,54 @@ final class CloudKitService {
         record["emoji"]           = user.emoji
         record["status"]          = user.status.rawValue
         record["ringColor"]       = user.ringColor.rawValue
-        record["latitude"]        = user.latitude
-        record["longitude"]       = user.longitude
         record["locationSharing"] = user.locationSharing.rawValue
         record["healthSharing"]   = user.healthSharing.rawValue
         record["fitnessSharing"]  = user.fitnessSharing.rawValue
 
         let h = user.healthSnapshot
-        record["steps"]            = h.steps
-        record["stepsDistanceKm"]  = h.stepsDistanceKm
-        record["sleepHours"]       = h.sleepHours
-        record["restingHeartRate"] = h.restingHeartRate
-        record["hydrationPercent"] = h.hydrationPercent
-        record["moveCalories"]     = h.moveCalories
-        record["moveGoal"]         = h.moveGoal
-        record["exerciseMinutes"]  = h.exerciseMinutes
-        record["exerciseGoal"]     = h.exerciseGoal
-        record["standHours"]       = h.standHours
-        record["standGoal"]        = h.standGoal
-        record["activeCalories"]   = h.activeCalories
+
+        // Location
+        if user.locationSharing.hasData {
+            record["latitude"]  = user.latitude
+            record["longitude"] = user.longitude
+        } else {
+            record["latitude"]  = nil
+            record["longitude"] = nil
+        }
+
+        // Health metrics
+        if user.healthSharing.hasData {
+            record["steps"]            = h.steps
+            record["stepsDistanceKm"]  = h.stepsDistanceKm
+            record["sleepHours"]       = h.sleepHours
+            record["restingHeartRate"] = h.restingHeartRate
+            record["hydrationPercent"] = h.hydrationPercent
+        } else {
+            record["steps"]            = nil
+            record["stepsDistanceKm"]  = nil
+            record["sleepHours"]       = nil
+            record["restingHeartRate"] = nil
+            record["hydrationPercent"] = nil
+        }
+
+        // Fitness / activity rings
+        if user.fitnessSharing.hasData {
+            record["moveCalories"]    = h.moveCalories
+            record["moveGoal"]        = h.moveGoal
+            record["exerciseMinutes"] = h.exerciseMinutes
+            record["exerciseGoal"]    = h.exerciseGoal
+            record["standHours"]      = h.standHours
+            record["standGoal"]       = h.standGoal
+            record["activeCalories"]  = h.activeCalories
+        } else {
+            record["moveCalories"]    = nil
+            record["moveGoal"]        = nil
+            record["exerciseMinutes"] = nil
+            record["exerciseGoal"]    = nil
+            record["standHours"]      = nil
+            record["standGoal"]       = nil
+            record["activeCalories"]  = nil
+        }
     }
 
     /// Translate a CloudKit record back into a `User`. Used to verify the round-trip now, and

@@ -18,6 +18,9 @@ class CommunityViewModel {
     @ObservationIgnored private let locationManager = LocationManager()
     @ObservationIgnored private let healthService = HealthKitService()
     @ObservationIgnored private let cloudKit = CloudKitService()
+    /// Polls the cloud group while the app is open so other members' updates appear ~live without
+    /// requiring push notifications (which would need aps-environment, at odds with TestFlight).
+    @ObservationIgnored private var liveRefreshTask: Task<Void, Never>?
     /// Once the user has manually moved the map (or picked a community) we stop auto-recentering
     /// on each new location fix, so we don't fight the user's panning.
     @ObservationIgnored private var hasAutoRecentered = false
@@ -37,11 +40,17 @@ class CommunityViewModel {
     // MARK: - Map State
     var mapCameraPosition: MapCameraPosition
     
+    /// Demo-filler toggle. `false` = real mode: only you + your CloudKit group show; the mock
+    /// communities, fake members (Member 1–4), and mock notifications are hidden. Flip to `true`
+    /// to see the demo data again (e.g. for screenshots). The device owner (`currentUser`) is
+    /// always loaded either way — real health, location, and name fold onto it.
+    static let showDemoData = false
+
     /// Injected data source. Defaults to the mock so existing callers (`CommunityViewModel()`)
     /// behave exactly as before; pass a `CloudKitService` later to go live — no other change.
     init(dataService: DataService = MockDataService.shared) {
-        self.communities = dataService.communities
-        self.notifications = dataService.notifications
+        self.communities = Self.showDemoData ? dataService.communities : []
+        self.notifications = Self.showDemoData ? dataService.notifications : []
         // Restore the display name the user set previously, on a local copy *before* assigning —
         // mutating the @Observable `currentUser` setter touches all of `self`, which isn't fully
         // initialized yet. CloudKit can't hand out the iCloud name, so the user owns it (see
@@ -96,21 +105,45 @@ class CommunityViewModel {
         locationManager.start()
         Task {
             await loadCurrentUserHealth()
-            // Push my freshly-loaded real data (health + location) up to my private iCloud DB.
+            // Read the group first so I can adopt my own name from the cloud (cross-device) before
+            // writing — otherwise sync would overwrite it with this device's default.
+            await refreshCloudMembers()
+            // Push my freshly-loaded real data (health + location + name) up to my iCloud DB.
             await cloudKit.syncMyData(currentUser)
-            // Then read the whole group back from the cloud (solo: just me; later: everyone).
+            // Re-read so my freshly-written record shows in the group.
             await refreshCloudMembers()
             // Keep steps (and other metrics) live: re-fetch whenever HealthKit reports new
             // samples, so the count updates while the app stays open.
             healthService.startStepUpdates { [weak self] in
                 Task { await self?.loadCurrentUserHealth() }
             }
+            startLiveRefresh()
         }
     }
 
-    /// Called from the map's `.onDisappear`: stops live HealthKit updates.
+    /// Called from the map's `.onDisappear`: stops live HealthKit updates + cloud polling.
     func onDisappear() {
         healthService.stopStepUpdates()
+        stopLiveRefresh()
+    }
+
+    // MARK: - Live refresh (M5, poll-based)
+    /// Re-fetches the cloud group every ~12s while the app is open, so other members' changes show
+    /// up without push. Safe to call repeatedly — any existing loop is cancelled first.
+    private func startLiveRefresh() {
+        liveRefreshTask?.cancel()
+        liveRefreshTask = Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(12))
+                if Task.isCancelled { break }
+                await self?.refreshCloudMembers()
+            }
+        }
+    }
+
+    private func stopLiveRefresh() {
+        liveRefreshTask?.cancel()
+        liveRefreshTask = nil
     }
 
     /// Stable id for the cloud-backed community, so refreshes update the same row instead of
@@ -121,23 +154,23 @@ class CommunityViewModel {
     /// community ("My SKIBIDI Group") alongside the untouched mock ones.
     func refreshCloudMembers() async {
         do {
-            let fetched = try await cloudKit.fetchAllMembers()
-            // Flag my own record so the map swaps in my live data. Match on `appleUserID` — the
-            // stable identity that survives across launches — not `id`, which is a fresh random
-            // UUID every launch (so a record written in a prior session would never match it,
-            // leaving the map showing my stale synced data). Fall back to `id` only when there's
-            // no Apple identity yet (e.g. mock/no sign-in), and never match nil-to-nil.
-            cloudMembers = fetched.map { member in
-                let isMe: Bool
-                if let myAppleID = currentUser.appleUserID, !myAppleID.isEmpty {
-                    isMe = member.appleUserID == myAppleID
-                } else {
-                    isMe = member.id == currentUser.id
-                }
-                guard isMe else { return member }
-                var me = member
-                me.isCurrentUser = true
-                return me
+            // My own record already comes back flagged `isCurrentUser` (matched by stable record
+            // name). Fall back to `appleUserID` — the stable Sign in with Apple identity — for
+            // records that the record-name match missed.
+            var fetched = try await cloudKit.fetchAllMembers()
+            if !fetched.contains(where: { $0.isCurrentUser }),
+               let myAppleID = currentUser.appleUserID, !myAppleID.isEmpty,
+               let myIndex = fetched.firstIndex(where: { $0.appleUserID == myAppleID }) {
+                fetched[myIndex].isCurrentUser = true
+            }
+            cloudMembers = fetched
+            // Cross-device name: if I never set a name on THIS device, adopt the one stored in my
+            // cloud record (set from another device). A locally-set name always wins.
+            let hasLocalName = !(UserDefaults.standard.string(forKey: Self.displayNameKey) ?? "").isEmpty
+            if !hasLocalName,
+               let me = cloudMembers.first(where: { $0.isCurrentUser }),
+               !me.name.isEmpty, me.name != "Your Name" {
+                currentUser.name = me.name
             }
             print("☁️ [CloudKit] fetched \(cloudMembers.count) member(s):", cloudMembers.map(\.name))
             updateCloudCommunity()
@@ -180,6 +213,21 @@ class CommunityViewModel {
         currentUser.name = trimmed
         UserDefaults.standard.set(trimmed, forKey: Self.displayNameKey)
         Task { await cloudKit.syncMyData(currentUser) }
+    }
+
+    // MARK: - Sharing toggles (M6)
+    /// Flip a sharing category. Setting it off re-syncs my record, which *deletes* that category's
+    /// fields from the cloud (see `CloudKitService.encode`) — so it disappears from everyone's app,
+    /// not just hidden locally.
+    func setLocationSharing(_ on: Bool) { currentUser.locationSharing = on ? .active : .never; resyncSharing() }
+    func setHealthSharing(_ on: Bool)   { currentUser.healthSharing   = on ? .active : .never; resyncSharing() }
+    func setFitnessSharing(_ on: Bool)  { currentUser.fitnessSharing  = on ? .active : .never; resyncSharing() }
+
+    private func resyncSharing() {
+        Task {
+            await cloudKit.syncMyData(currentUser)
+            await refreshCloudMembers()
+        }
     }
 
     // MARK: - Sharing
@@ -454,7 +502,7 @@ class SettingsViewModel {
     var communities: [Community]
     
     init(dataService: DataService = MockDataService.shared) {
-        self.communities = dataService.communities
+        self.communities = CommunityViewModel.showDemoData ? dataService.communities : []
     }
     
     func leaveCommunity(_ community: Community) {

@@ -11,7 +11,6 @@
 		1D18A5D8435CFCF15ECE217A /* SplashAuthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 098AEA7EF2C2DF98C37A829A /* SplashAuthView.swift */; };
 		2B0BB823171E63D21C2BEE92 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C80060B74DFA0C417DF760A /* SettingsView.swift */; };
 		2CE6BA8628FFCFB023B76756 /* OnboardingFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A8F4A7D9D88D6871BF8364E /* OnboardingFlowView.swift */; };
-		2E2ECA449C27B10AD7B58450 /* settings.local.json in Resources */ = {isa = PBXBuildFile; fileRef = A5B62BE991A8C019A3A42B13 /* settings.local.json */; };
 		4D05D8E5676FF22CB1B7A97B /* AppLogoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B68E52E5DB8CF83235FFDB9 /* AppLogoView.swift */; };
 		5294E02B2576A6EB342D5493 /* EmojiPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 681AEEA0087E98E038258BD2 /* EmojiPickerView.swift */; };
 		62138A6DDA0A8A8A9BD18523 /* CoreComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AF10A34EDA47A4D435E3FC1 /* CoreComponents.swift */; };
@@ -74,17 +73,16 @@
 		8BBC81DE3863FB142C9DE759 /* ProfileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileStore.swift; sourceTree = "<group>"; };
 		8E747E1C8D2ABFB8AE640406 /* CloudSharingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudSharingView.swift; sourceTree = "<group>"; };
 		9A24C042A08987CA31F5AC8F /* CommunityDetailViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommunityDetailViews.swift; sourceTree = "<group>"; };
-		A5B62BE991A8C019A3A42B13 /* settings.local.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = settings.local.json; sourceTree = "<group>"; };
 		A5F095FF0C071C28F4872071 /* PermissionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionsView.swift; sourceTree = "<group>"; };
 		B53D3A870B6D6DE12A2ECAA8 /* MockDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockDataService.swift; sourceTree = "<group>"; };
 		B8A540FCE403A989EB24357A /* View+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+Extensions.swift"; sourceTree = "<group>"; };
 		C1419608FDEC2968095F658E /* CloudKitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudKitService.swift; sourceTree = "<group>"; };
 		DE02C855B4992635552733D6 /* ProfileSyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileSyncService.swift; sourceTree = "<group>"; };
-		E553EE3E845624CB756297B2 /* SKIBIDI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SKIBIDI.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E553EE3E845624CB756297B2 /* SKIBIDI.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = SKIBIDI.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED898E98345565D3E5AD9133 /* ProfileViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViews.swift; sourceTree = "<group>"; };
 		F0902389740698E30F7989B4 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		FBCF1853203F1593EC214D99 /* HealthKitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitService.swift; sourceTree = "<group>"; };
-		"TEMP_432589D0-6D7A-48D1-A314-D891BA6AF8A9" /* Local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Local.xcconfig; sourceTree = "<group>"; };
+		"TEMP_FCF3C69D-00A2-4957-B296-1B43C6979B28" /* Local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Local.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -158,21 +156,12 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
-		5C198F4079DE1E97B7C1916D /* .claude */ = {
-			isa = PBXGroup;
-			children = (
-				A5B62BE991A8C019A3A42B13 /* settings.local.json */,
-			);
-			path = .claude;
-			sourceTree = "<group>";
-		};
 		966AF4115E83F59BC4BA3223 = {
 			isa = PBXGroup;
 			children = (
 				0C7E54D154C1D30BF332CE82 /* Documentation */,
 				DFC9D088F7081D1DA99A6224 /* SKIBIDI */,
 				10E8CEE9FA1992B0B96F169B /* Products */,
-				B73B16B92FD8D7EF00E69702 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -183,14 +172,6 @@
 				18029A820237FE81EFA8AD1D /* ViewModels.swift */,
 			);
 			path = ViewModels;
-			sourceTree = "<group>";
-		};
-		B73B16B92FD8D7EF00E69702 /* Recovered References */ = {
-			isa = PBXGroup;
-			children = (
-				"TEMP_432589D0-6D7A-48D1-A314-D891BA6AF8A9" /* Local.xcconfig */,
-			);
-			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 		BB20421DB1C21DC9C8C9E850 /* Models */ = {
@@ -231,7 +212,6 @@
 				490FC804D3BB75DFFA9D570B /* Assets.xcassets */,
 				0C2C5D9D06EB903EA3CAFBFD /* Info.plist */,
 				786091762039EE91AACCCCAE /* SKIBIDI.entitlements */,
-				5C198F4079DE1E97B7C1916D /* .claude */,
 				2D19A2961F8D24F8A95BF609 /* App */,
 				BB20421DB1C21DC9C8C9E850 /* Models */,
 				BEC4BF9A87C0A9275D0334D0 /* Services */,
@@ -252,6 +232,14 @@
 				ED898E98345565D3E5AD9133 /* ProfileViews.swift */,
 			);
 			path = People;
+			sourceTree = "<group>";
+		};
+		"TEMP_AA9AD206-35D4-46D2-B608-8CDB002CA850" /* Skibidi */ = {
+			isa = PBXGroup;
+			children = (
+				"TEMP_FCF3C69D-00A2-4957-B296-1B43C6979B28" /* Local.xcconfig */,
+			);
+			path = Skibidi;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -285,6 +273,7 @@
 				LastUpgradeCheck = 1600;
 				TargetAttributes = {
 					D79EBD51FE2A823A2678001A = {
+						DevelopmentTeam = W742UG8KZT;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -314,7 +303,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				CFB1C4AAD60DC5F9AA284285 /* Assets.xcassets in Resources */,
-				2E2ECA449C27B10AD7B58450 /* settings.local.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -366,18 +354,17 @@
 /* Begin XCBuildConfiguration section */
 		41F1D6D2278A92B5AD77D556 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = "TEMP_432589D0-6D7A-48D1-A314-D891BA6AF8A9" /* Local.xcconfig */;
+			baseConfigurationReference = "TEMP_FCF3C69D-00A2-4957-B296-1B43C6979B28" /* Local.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = SKIBIDI/SKIBIDI.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = YQ299RVZTY;
 				INFOPLIST_FILE = SKIBIDI/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.bpjsr.skibidi;
+				PRODUCT_BUNDLE_IDENTIFIER = com.bpjsr.tim;
 				SDKROOT = iphoneos;
 				SWIFT_STRICT_CONCURRENCY = minimal;
 				TARGETED_DEVICE_FAMILY = 1;
@@ -386,18 +373,17 @@
 		};
 		46EF12D472528BE08ECEA389 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = "TEMP_432589D0-6D7A-48D1-A314-D891BA6AF8A9" /* Local.xcconfig */;
+			baseConfigurationReference = "TEMP_FCF3C69D-00A2-4957-B296-1B43C6979B28" /* Local.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = SKIBIDI/SKIBIDI.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = YQ299RVZTY;
 				INFOPLIST_FILE = SKIBIDI/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.bpjsr.skibidi;
+				PRODUCT_BUNDLE_IDENTIFIER = com.bpjsr.tim;
 				SDKROOT = iphoneos;
 				SWIFT_STRICT_CONCURRENCY = minimal;
 				TARGETED_DEVICE_FAMILY = 1;
