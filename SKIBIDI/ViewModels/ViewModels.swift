@@ -38,6 +38,7 @@ class CommunityViewModel {
     // profile yet (the map falls back to the previous behavior until onboarding writes the intents).
     @ObservationIgnored private var locationIntent = true
     @ObservationIgnored private var healthIntent = true
+    @ObservationIgnored private var fitnessIntent = true
     
     // MARK: - Navigation State
     var selectedCommunity: Community?
@@ -54,22 +55,34 @@ class CommunityViewModel {
     // MARK: - Map State
     var mapCameraPosition: MapCameraPosition
     
-    /// Demo-filler toggle. `false` = real mode: only you + your CloudKit group show; the mock
-    /// communities, fake members (Member 1–4), and mock notifications are hidden. Flip to `true`
-    /// to see the demo data again (e.g. for screenshots). The device owner (`currentUser`) is
-    /// always loaded either way — real health, location, and name fold onto it.
-    static let showDemoData = false
+    /// Where the map sits before the first real GPS fix (Bali, matching the trip context).
+    private static let defaultMapCenter = CLLocationCoordinate2D(latitude: -8.4095, longitude: 115.1889)
 
-    /// Injected data source. Defaults to the mock so existing callers (`CommunityViewModel()`)
-    /// behave exactly as before; pass a `CloudKitService` later to go live — no other change.
-    init(dataService: DataService = MockDataService.shared) {
-        self.communities = Self.showDemoData ? dataService.communities : []
-        self.notifications = Self.showDemoData ? dataService.notifications : []
+    /// The device owner before onboarding + HealthKit fill in the real data: empty metrics
+    /// (live values fold in via `loadCurrentUserHealth`) and a placeholder coordinate that the
+    /// first location fix replaces.
+    private static func makeDefaultUser() -> User {
+        User(
+            id: UUID(),
+            name: "Your Name",
+            emoji: "👻",
+            isCurrentUser: true,
+            status: .active,
+            healthSnapshot: .empty,
+            latitude: -8.5069,
+            longitude: 115.2625,
+            ringColor: .pink
+        )
+    }
+
+    init() {
+        self.communities = []
+        self.notifications = []
         // Restore the display name the user set previously, on a local copy *before* assigning —
         // mutating the @Observable `currentUser` setter touches all of `self`, which isn't fully
         // initialized yet. CloudKit can't hand out the iCloud name, so the user owns it (see
         // updateDisplayName).
-        var user = dataService.currentUser
+        var user = Self.makeDefaultUser()
         // Fold the onboarding profile (saved locally on "Done!") onto the device owner, so the map
         // pin / profile show the real name + emoji + Apple identity. Falls back to the legacy
         // display-name key, then the mock default.
@@ -79,13 +92,14 @@ class CommunityViewModel {
             // assignment, so it's allowed here before the rest of `self` is initialized.
             locationIntent = profile.locationIntent
             healthIntent = profile.healthIntent
+            fitnessIntent = profile.fitnessIntent ?? profile.healthIntent
         } else if let savedName = UserDefaults.standard.string(forKey: Self.displayNameKey), !savedName.isEmpty {
             user.name = savedName
         }
         self.currentUser = user
         self.mapCameraPosition = .region(
             MKCoordinateRegion(
-                center: dataService.mapCenter,
+                center: Self.defaultMapCenter,
                 span: MKCoordinateSpan(latitudeDelta: 0.15, longitudeDelta: 0.15)
             )
         )
@@ -96,7 +110,7 @@ class CommunityViewModel {
         }
 
         // A just-accepted share invite: write my record into the new zone and refresh right
-        // away, so joining feels instant instead of waiting for the next ~12s poll tick.
+        // away, so joining feels instant instead of waiting for the next poll tick.
         NotificationCenter.default.addObserver(
             forName: .cloudKitShareAccepted, object: nil, queue: .main
         ) { [weak self] _ in
@@ -114,6 +128,12 @@ class CommunityViewModel {
         if !profile.fullName.isEmpty { user.name = profile.fullName }
         if !profile.selectedEmoji.isEmpty { user.emoji = profile.selectedEmoji }
         user.appleUserID = profile.appleUserID
+        // The onboarding/settings toggles are the sharing source of truth. Off → `.never`, so
+        // the CloudKit encode deletes those fields and other members see "Not shared" instead
+        // of zeroed-out metrics.
+        user.locationSharing = profile.locationIntent ? .active : .never
+        user.healthSharing = profile.healthIntent ? .active : .never
+        user.fitnessSharing = (profile.fitnessIntent ?? profile.healthIntent) ? .active : .never
     }
 
     /// Re-read the locally-saved onboarding profile and apply it to `currentUser`.
@@ -135,6 +155,7 @@ class CommunityViewModel {
         guard let profile = UserDefaultsProfileStore().load() else { return }
         locationIntent = profile.locationIntent
         healthIntent = profile.healthIntent
+        fitnessIntent = profile.fitnessIntent ?? profile.healthIntent
     }
 
     // MARK: - Lifecycle
@@ -148,8 +169,8 @@ class CommunityViewModel {
             locationManager.start()
         }
         Task {
-            // Health: read real metrics only if opted in (otherwise the mock snapshot stands).
-            if healthIntent {
+            // Health/fitness both come from HealthKit — read if either is opted in.
+            if healthIntent || fitnessIntent {
                 await loadCurrentUserHealth()
             }
             // Read the group first so I can adopt my own name from the cloud (cross-device) before
@@ -161,7 +182,7 @@ class CommunityViewModel {
             await refreshCloudCommunities()
             // Keep steps (and other metrics) live: re-fetch whenever HealthKit reports new
             // samples, so the count updates while the app stays open.
-            if healthIntent {
+            if healthIntent || fitnessIntent {
                 healthService.startStepUpdates { [weak self] in
                     Task { await self?.loadCurrentUserHealth() }
                 }
@@ -177,13 +198,13 @@ class CommunityViewModel {
     }
 
     // MARK: - Live refresh (M5, poll-based)
-    /// Re-fetches the cloud group every ~12s while the app is open, so other members' changes show
+    /// Re-fetches the cloud group every ~6s while the app is open, so other members' changes show
     /// up without push. Safe to call repeatedly — any existing loop is cancelled first.
     private func startLiveRefresh() {
         liveRefreshTask?.cancel()
         liveRefreshTask = Task { [weak self] in
             while !Task.isCancelled {
-                try? await Task.sleep(for: .seconds(12))
+                try? await Task.sleep(for: .seconds(6))
                 if Task.isCancelled { break }
                 await self?.refreshCloudCommunities()
             }
@@ -282,11 +303,59 @@ class CommunityViewModel {
 
     // MARK: - Sharing toggles (M6)
     /// Flip a sharing category. Setting it off re-syncs my record, which *deletes* that category's
-    /// fields from the cloud (see `CloudKitService.encode`) — so it disappears from everyone's app,
-    /// not just hidden locally.
-    func setLocationSharing(_ on: Bool) { currentUser.locationSharing = on ? .active : .never; resyncSharing() }
-    func setHealthSharing(_ on: Bool)   { currentUser.healthSharing   = on ? .active : .never; resyncSharing() }
-    func setFitnessSharing(_ on: Bool)  { currentUser.fitnessSharing  = on ? .active : .never; resyncSharing() }
+    /// fields from the cloud (see `CloudKitService.encode`) — so other members see "Not shared",
+    /// not just hidden locally. The choice is persisted onto the stored profile so a relaunch
+    /// keeps it; turning a category back on (re)starts the matching local data pipeline.
+    func setLocationSharing(_ on: Bool) {
+        currentUser.locationSharing = on ? .active : .never
+        locationIntent = on
+        persistIntents { $0.locationIntent = on }
+        if on { locationManager.start() } else { locationManager.stop() }
+        resyncSharing()
+    }
+
+    func setHealthSharing(_ on: Bool) {
+        currentUser.healthSharing = on ? .active : .never
+        healthIntent = on
+        persistIntents { $0.healthIntent = on }
+        if on { startHealthUpdates() } else { stopHealthUpdatesIfUnused() }
+        resyncSharing()
+    }
+
+    func setFitnessSharing(_ on: Bool) {
+        currentUser.fitnessSharing = on ? .active : .never
+        fitnessIntent = on
+        persistIntents { $0.fitnessIntent = on }
+        if on { startHealthUpdates() } else { stopHealthUpdatesIfUnused() }
+        resyncSharing()
+    }
+
+    /// Write a toggle change back onto the saved onboarding profile, so the next launch
+    /// derives the same sharing states (see `apply`). No profile yet → nothing to persist.
+    private func persistIntents(_ mutate: (inout StoredProfile) -> Void) {
+        let store = UserDefaultsProfileStore()
+        guard var profile = store.load() else { return }
+        mutate(&profile)
+        try? store.save(profile)
+    }
+
+    /// (Re)start the HealthKit read + live step observer — used when health or fitness sharing
+    /// is switched on after launch, where `onAppear` already skipped them.
+    private func startHealthUpdates() {
+        Task {
+            await loadCurrentUserHealth()
+            healthService.startStepUpdates { [weak self] in
+                Task { await self?.loadCurrentUserHealth() }
+            }
+        }
+    }
+
+    /// Stop the live HealthKit observer once neither health nor fitness sharing needs it.
+    private func stopHealthUpdatesIfUnused() {
+        if !healthIntent && !fitnessIntent {
+            healthService.stopStepUpdates()
+        }
+    }
 
     private func resyncSharing() {
         Task {
@@ -299,10 +368,17 @@ class CommunityViewModel {
     /// so the caller drops straight into sharing the link. `nil` on failure (logged).
     func createCommunity(name: String, imageData: Data? = nil) async -> ShareSheetData? {
         do {
-            let (_, share, container) = try await cloudKit.createCommunity(named: name, imageData: imageData)
-            await cloudKit.syncMyData(currentUser, sosCommunityIDs: currentSOSTargets)   // put my record in the new zone
-            await refreshCloudCommunities()
+            let (created, share, container) = try await cloudKit.createCommunity(named: name, imageData: imageData)
+            // Show the new team immediately — its name and photo are already known locally.
+            // Writing my member record + the re-fetch catch up in the background; the next
+            // refresh replaces this optimistic row with the server copy.
+            cloudCommunities.insert(created, at: 0)
+            rebuildCloudCommunityRows()
             showingCreateCommunity = false
+            Task {
+                await cloudKit.syncMyData(currentUser, sosCommunityIDs: currentSOSTargets)   // put my record in the new zone
+                await refreshCloudCommunities()
+            }
             return ShareSheetData(share: share, container: container)
         } catch {
             print("❌ [Community] create failed:", error)
@@ -505,13 +581,15 @@ class CommunityViewModel {
 
     /// Owner deletes the community for everyone; a participant leaves it. The cloud removal must
     /// succeed before the row goes — a local-only removal would just resurrect on the next poll.
-    func leaveCommunity(_ community: Community) async {
+    /// Returns whether the removal actually happened, so callers can confirm or report failure.
+    @discardableResult
+    func leaveCommunity(_ community: Community) async -> Bool {
         if let cloud = cloudCommunities.first(where: { $0.id == community.id }) {
             do {
                 try await cloudKit.removeCommunity(cloud)
             } catch {
                 print("❌ [Community] remove failed:", error)
-                return
+                return false
             }
             cloudCommunities.removeAll { $0.id == cloud.id }
             cloudCommunityIDs.remove(cloud.id)
@@ -521,23 +599,7 @@ class CommunityViewModel {
         if selectedCommunity?.id == community.id {
             resetNavigationAfterLeaving()
         }
-    }
-
-    func leaveAllCommunities() async {
-        for cloud in cloudCommunities {
-            do {
-                try await cloudKit.removeCommunity(cloud)
-            } catch {
-                print("❌ [Community] remove failed for \(cloud.name):", error)
-                continue   // keep the row; the poll keeps showing what still exists in the cloud
-            }
-            cloudCommunityIDs.remove(cloud.id)
-            communities.removeAll { $0.id == cloud.id }
-        }
-        cloudCommunities.removeAll { !cloudCommunityIDs.contains($0.id) }
-        // Mock/local rows have no cloud side — drop them outright (pre-existing behavior).
-        communities.removeAll { !cloudCommunityIDs.contains($0.id) }
-        resetNavigationAfterLeaving()
+        return true
     }
 
     private func resetNavigationAfterLeaving() {
@@ -592,47 +654,5 @@ class CommunityViewModel {
         showingNotifications = false
 
         Task { await syncSOS() }
-    }
-}
-
-/// Manages settings state: permissions, privacy, and location sharing.
-@MainActor
-@Observable
-class SettingsViewModel {
-    // MARK: - Privacy
-    var privacyLevel: PrivacyLevel = .everyone
-    var showingPrivacyMenu = false
-    
-    // MARK: - Community
-    var showingLeaveCommunity = false
-    var communityToLeave: Community?
-    
-    // MARK: - Communities Reference
-    var communities: [Community]
-    
-    init(dataService: DataService = MockDataService.shared) {
-        self.communities = CommunityViewModel.showDemoData ? dataService.communities : []
-    }
-    
-    func leaveCommunity(_ community: Community) {
-        communities.removeAll { $0.id == community.id }
-        showingLeaveCommunity = false
-        communityToLeave = nil
-    }
-
-    func leaveAllCommunities() {
-        communities.removeAll()
-        showingLeaveCommunity = false
-        communityToLeave = nil
-    }
-    
-    func confirmLeave(community: Community) {
-        communityToLeave = community
-        showingLeaveCommunity = true
-    }
-
-    func confirmLeaveAllCommunities() {
-        communityToLeave = nil
-        showingLeaveCommunity = true
     }
 }

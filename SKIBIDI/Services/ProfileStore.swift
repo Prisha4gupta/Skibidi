@@ -12,6 +12,9 @@ struct StoredProfile: Codable, Equatable {
     var locationIntent: Bool
     var healthIntent: Bool
     var notificationsIntent: Bool
+    /// Fitness (activity rings) sharing, settable from Settings. Optional because profiles saved
+    /// before this field existed must keep decoding; `nil` falls back to `healthIntent`.
+    var fitnessIntent: Bool? = nil
 }
 
 /// Local-first persistence for the onboarding profile. Synchronous and offline — it must never
