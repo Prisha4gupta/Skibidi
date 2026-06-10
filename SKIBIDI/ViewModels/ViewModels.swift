@@ -30,6 +30,14 @@ class CommunityViewModel {
     /// Once the user has manually moved the map (or picked a community) we stop auto-recentering
     /// on each new location fix, so we don't fight the user's panning.
     @ObservationIgnored private var hasAutoRecentered = false
+
+    // MARK: - Permission intents (from onboarding)
+    // The onboarding toggles are the single source of truth for whether we track at all. We load
+    // them from the saved profile and gate `onAppear` on them — the system prompt already happened
+    // during onboarding, so the map never re-requests. Defaulted on for installs with no saved
+    // profile yet (the map falls back to the previous behavior until onboarding writes the intents).
+    @ObservationIgnored private var locationIntent = true
+    @ObservationIgnored private var healthIntent = true
     
     // MARK: - Navigation State
     var selectedCommunity: Community?
@@ -67,6 +75,10 @@ class CommunityViewModel {
         // display-name key, then the mock default.
         if let profile = UserDefaultsProfileStore().load() {
             Self.apply(profile, to: &user)
+            // Capture the onboarding permission toggles for `onAppear` gating. Plain stored-property
+            // assignment, so it's allowed here before the rest of `self` is initialized.
+            locationIntent = profile.locationIntent
+            healthIntent = profile.healthIntent
         } else if let savedName = UserDefaults.standard.string(forKey: Self.displayNameKey), !savedName.isEmpty {
             user.name = savedName
         }
@@ -113,16 +125,33 @@ class CommunityViewModel {
     func reloadProfileFromLocalStore() {
         guard let profile = UserDefaultsProfileStore().load() else { return }
         Self.apply(profile, to: &currentUser)
+        loadPermissionIntents()
+    }
+
+    /// Pull the onboarding permission toggles off the saved profile so `onAppear` can gate tracking
+    /// on them. No profile yet (pre-onboarding launch) → keep the defaults. The OS prompt itself
+    /// already happened in onboarding; here we only decide whether to *use* the granted capability.
+    private func loadPermissionIntents() {
+        guard let profile = UserDefaultsProfileStore().load() else { return }
+        locationIntent = profile.locationIntent
+        healthIntent = profile.healthIntent
     }
 
     // MARK: - Lifecycle
-    /// Called from the map's `.onAppear`: requests location + HealthKit permission, starts
-    /// location updates, and loads the current user's real health metrics.
+    /// Called from the map's `.onAppear`. Permissions were already requested during onboarding, so
+    /// we do NOT prompt here — we only *use* the capabilities the user opted into via the onboarding
+    /// toggles (`locationIntent` / `healthIntent`). A toggle left off means we never start that
+    /// tracking, so the onboarding choice is the single source of truth.
     func onAppear() {
-        locationManager.requestAuthorization()
-        locationManager.start()
+        // Location: start only if opted in. `start()` itself no-ops unless the OS granted access.
+        if locationIntent {
+            locationManager.start()
+        }
         Task {
-            await loadCurrentUserHealth()
+            // Health: read real metrics only if opted in (otherwise the mock snapshot stands).
+            if healthIntent {
+                await loadCurrentUserHealth()
+            }
             // Read the group first so I can adopt my own name from the cloud (cross-device) before
             // writing — otherwise sync would overwrite it with this device's default.
             await refreshCloudCommunities()
@@ -132,8 +161,10 @@ class CommunityViewModel {
             await refreshCloudCommunities()
             // Keep steps (and other metrics) live: re-fetch whenever HealthKit reports new
             // samples, so the count updates while the app stays open.
-            healthService.startStepUpdates { [weak self] in
-                Task { await self?.loadCurrentUserHealth() }
+            if healthIntent {
+                healthService.startStepUpdates { [weak self] in
+                    Task { await self?.loadCurrentUserHealth() }
+                }
             }
             startLiveRefresh()
         }

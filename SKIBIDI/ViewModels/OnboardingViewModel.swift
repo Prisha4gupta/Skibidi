@@ -148,11 +148,24 @@ final class OnboardingViewModel {
         step = .permissions
     }
 
+    /// Fire the real system permission prompts for the toggles the user left ON, **once**, while
+    /// still on the permissions screen. Awaited sequentially so the dialogs present one at a time
+    /// instead of stacking. This is the single place the app asks: the map later just uses what was
+    /// granted here (gated on the same intents) and never re-prompts. OS-level denials are fine —
+    /// the saved intent records what the user *wanted*; each service re-checks the real grant at use.
+    func requestEnabledPermissions() async {
+        if locationIntent { await locationPermission.request() }
+        if notificationsIntent { await notificationPermission.request() }
+        // Health unavailable forces `healthIntent` off in init, so this only fires where it can work.
+        if healthIntent { await healthPermission.request() }
+    }
+
     /// Screen 6 → "Done!". Local-first completion:
     /// 1. Save the profile + recorded intents **locally** (synchronous, offline — never blocks).
     /// 2. Kick off a **non-blocking** background CloudKit sync (best-effort; retried next launch).
     /// Returns `true` once the local save succeeds — the caller flips `hasOnboarded` only then, so
-    /// onboarding finishes regardless of network/iCloud state. No system permission prompts fire.
+    /// onboarding finishes regardless of network/iCloud state. The system prompts are fired
+    /// separately by `requestEnabledPermissions()` just before this, on the same "Done" tap.
     @discardableResult
     func completeOnboarding() -> Bool {
         let profile = StoredProfile(
