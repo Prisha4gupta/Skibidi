@@ -218,7 +218,7 @@ class CommunityViewModel {
                 id: cloud.id,
                 name: cloud.name,
                 type: .detail,
-                imageData: nil,
+                imageData: cloud.imageData,
                 members: cloud.members,
                 dateActive: cloud.createdAt ?? Date(),
                 memberCount: cloud.members.count,
@@ -266,9 +266,9 @@ class CommunityViewModel {
 
     /// Creates a real CloudKit community (own zone + share) and returns the invite-sheet data
     /// so the caller drops straight into sharing the link. `nil` on failure (logged).
-    func createCommunity(name: String) async -> ShareSheetData? {
+    func createCommunity(name: String, imageData: Data? = nil) async -> ShareSheetData? {
         do {
-            let (_, share, container) = try await cloudKit.createCommunity(named: name)
+            let (_, share, container) = try await cloudKit.createCommunity(named: name, imageData: imageData)
             await cloudKit.syncMyData(currentUser, sosCommunityIDs: currentSOSTargets)   // put my record in the new zone
             await refreshCloudCommunities()
             showingCreateCommunity = false
@@ -465,22 +465,51 @@ class CommunityViewModel {
         showingCommunitySheet = true
     }
     
-    func leaveCommunity(_ community: Community) {
+    /// Whether I created this community. `true` → removing it deletes the group for everyone
+    /// (CloudKit can't transfer ownership); `false` → I just leave; `nil` → mock/local-only row.
+    /// Drives the swipe-action label ("Delete" vs "Leave").
+    func ownsCommunity(_ community: Community) -> Bool? {
+        cloudCommunities.first { $0.id == community.id }?.isOwned
+    }
+
+    /// Owner deletes the community for everyone; a participant leaves it. The cloud removal must
+    /// succeed before the row goes — a local-only removal would just resurrect on the next poll.
+    func leaveCommunity(_ community: Community) async {
+        if let cloud = cloudCommunities.first(where: { $0.id == community.id }) {
+            do {
+                try await cloudKit.removeCommunity(cloud)
+            } catch {
+                print("❌ [Community] remove failed:", error)
+                return
+            }
+            cloudCommunities.removeAll { $0.id == cloud.id }
+            cloudCommunityIDs.remove(cloud.id)
+        }
         communities.removeAll { $0.id == community.id }
 
         if selectedCommunity?.id == community.id {
-            selectedCommunity = nil
-            selectedMember = nil
-            showingPeopleList = false
-            showingDashboard = false
-            showingMemberProfile = false
-            showingYourProfile = false
-            showingCommunitySheet = true
+            resetNavigationAfterLeaving()
         }
     }
 
-    func leaveAllCommunities() {
-        communities.removeAll()
+    func leaveAllCommunities() async {
+        for cloud in cloudCommunities {
+            do {
+                try await cloudKit.removeCommunity(cloud)
+            } catch {
+                print("❌ [Community] remove failed for \(cloud.name):", error)
+                continue   // keep the row; the poll keeps showing what still exists in the cloud
+            }
+            cloudCommunityIDs.remove(cloud.id)
+            communities.removeAll { $0.id == cloud.id }
+        }
+        cloudCommunities.removeAll { !cloudCommunityIDs.contains($0.id) }
+        // Mock/local rows have no cloud side — drop them outright (pre-existing behavior).
+        communities.removeAll { !cloudCommunityIDs.contains($0.id) }
+        resetNavigationAfterLeaving()
+    }
+
+    private func resetNavigationAfterLeaving() {
         selectedCommunity = nil
         selectedMember = nil
         showingPeopleList = false
@@ -539,14 +568,6 @@ class CommunityViewModel {
 @MainActor
 @Observable
 class SettingsViewModel {
-    // MARK: - Permissions
-    var isFitnessEnabled = true
-    var isHealthEnabled = false
-    var isWeatherEnabled = false
-    
-    // MARK: - Location
-    var isLocationSharingEnabled = true
-    
     // MARK: - Privacy
     var privacyLevel: PrivacyLevel = .everyone
     var showingPrivacyMenu = false
