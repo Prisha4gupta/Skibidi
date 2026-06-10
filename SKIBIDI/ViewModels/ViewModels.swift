@@ -1,5 +1,6 @@
 import SwiftUI
 import MapKit
+import UserNotifications
 
 /// Manages community data, member selection, and navigation state for the People tab.
 @MainActor
@@ -373,7 +374,21 @@ class CommunityViewModel {
                 $0.message == message && $0.communityName == community.name
             }) else { continue }
             pushNotification(community: community, emoji: "🚨", message: message)
+            postSOSBanner(from: member.name, sos: sos, teamName: community.name)
         }
+    }
+
+    /// Lock-screen banner for an incoming SOS — the one event urgent enough to surface
+    /// outside the app (joins/leaves stay in-app only). iOS suppresses it while the app is
+    /// foregrounded (the red pin + feed already show it there), and it's a silent no-op if
+    /// the user never granted notification permission in onboarding.
+    private func postSOSBanner(from memberName: String, sos: String, teamName: String) {
+        let content = UNMutableNotificationContent()
+        content.title = "🚨 SOS from \(memberName)"
+        content.body = "\(sos) — \(teamName)"
+        content.sound = .default
+        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil)
+        UNUserNotificationCenter.current().add(request)
     }
 
     /// Stable cross-poll identity for a member. The record's `userUUID` changes when that

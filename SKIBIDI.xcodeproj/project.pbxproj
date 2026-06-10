@@ -73,11 +73,10 @@
 		B8A540FCE403A989EB24357A /* View+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+Extensions.swift"; sourceTree = "<group>"; };
 		C1419608FDEC2968095F658E /* CloudKitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudKitService.swift; sourceTree = "<group>"; };
 		DE02C855B4992635552733D6 /* ProfileSyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileSyncService.swift; sourceTree = "<group>"; };
-		E553EE3E845624CB756297B2 /* SKIBIDI.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = SKIBIDI.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E553EE3E845624CB756297B2 /* SKIBIDI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SKIBIDI.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED898E98345565D3E5AD9133 /* ProfileViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViews.swift; sourceTree = "<group>"; };
 		F0902389740698E30F7989B4 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		FBCF1853203F1593EC214D99 /* HealthKitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitService.swift; sourceTree = "<group>"; };
-		"TEMP_5483D2F1-9778-4C25-85C8-B50EC4115118" /* Local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Local.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -148,6 +147,7 @@
 			children = (
 				DFC9D088F7081D1DA99A6224 /* SKIBIDI */,
 				10E8CEE9FA1992B0B96F169B /* Products */,
+				D0C1A6782FD973890057926A /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -190,6 +190,13 @@
 			path = Services;
 			sourceTree = "<group>";
 		};
+		D0C1A6782FD973890057926A /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = "Recovered References";
+			sourceTree = "<group>";
+		};
 		DFC9D088F7081D1DA99A6224 /* SKIBIDI */ = {
 			isa = PBXGroup;
 			children = (
@@ -216,14 +223,6 @@
 				ED898E98345565D3E5AD9133 /* ProfileViews.swift */,
 			);
 			path = People;
-			sourceTree = "<group>";
-		};
-		"TEMP_0B8AC89E-3E4D-4904-BE00-8DD51D85043A" /* Skibidi */ = {
-			isa = PBXGroup;
-			children = (
-				"TEMP_5483D2F1-9778-4C25-85C8-B50EC4115118" /* Local.xcconfig */,
-			);
-			path = Skibidi;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -257,7 +256,6 @@
 				LastUpgradeCheck = 1600;
 				TargetAttributes = {
 					D79EBD51FE2A823A2678001A = {
-						DevelopmentTeam = W742UG8KZT;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -336,11 +334,11 @@
 /* Begin XCBuildConfiguration section */
 		41F1D6D2278A92B5AD77D556 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = "TEMP_5483D2F1-9778-4C25-85C8-B50EC4115118" /* Local.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = SKIBIDI/SKIBIDI.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = YQ299RVZTY;
 				INFOPLIST_FILE = SKIBIDI/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -355,11 +353,11 @@
 		};
 		46EF12D472528BE08ECEA389 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = "TEMP_5483D2F1-9778-4C25-85C8-B50EC4115118" /* Local.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = SKIBIDI/SKIBIDI.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = YQ299RVZTY;
 				INFOPLIST_FILE = SKIBIDI/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
