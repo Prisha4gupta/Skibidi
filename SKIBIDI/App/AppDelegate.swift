@@ -2,8 +2,8 @@ import SwiftUI
 import CloudKit
 
 /// Handles incoming CloudKit share invites. When someone taps the share link, iOS launches the
-/// app and calls this with the share metadata; we accept it, which adds the owner's shared zone
-/// to this user's Shared database. After that, `CloudKitService.resolveGroupLocation()` finds it
+/// app and calls this with the share metadata; we accept it, which adds the owner's community zone
+/// to this user's Shared database. After that, `CloudKitService.fetchCommunities()` finds it
 /// and reads/writes there.
 ///
 /// Requires `CKSharingSupported = YES` in Info.plist so the system offers this app for the link.

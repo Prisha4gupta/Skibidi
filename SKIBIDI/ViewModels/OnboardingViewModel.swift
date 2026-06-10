@@ -40,7 +40,8 @@ final class OnboardingViewModel {
     /// The name shown on the map / profile. Pre-filled from Apple on first sign-in if granted.
     var fullName: String = ""
     /// The avatar emoji, stored as a plain `String` (matches `User.emoji`).
-    var selectedEmoji: String = "😀"
+    var selectedEmoji: String = OnboardingViewModel.defaultEmoji
+    private static let defaultEmoji = "😀"
 
     /// True once there's a non-empty name to proceed with (drives the "Next" button).
     var canProceedFromProfile: Bool {
@@ -106,6 +107,26 @@ final class OnboardingViewModel {
                 fullName = name
             }
             authState = .succeeded
+            // Reinstall / new device: Apple withheld the name (not the first-ever authorization),
+            // so pre-fill from the profile we previously synced to CloudKit. Best-effort and
+            // non-blocking — the flow advances regardless, and a late result never overwrites
+            // anything the user has typed in the meantime.
+            if fullName.isEmpty {
+                let sync = profileSync
+                let signedInAppleID = credential.appleUserID
+                Task { [weak self] in
+                    guard let cloud = await sync.fetch(), let self else { return }
+                    // Only adopt a profile that belongs to this Apple ID. The private DB is
+                    // per-iCloud-account (normally the same account) — skip on mismatch.
+                    if let storedID = cloud.appleUserID, storedID != signedInAppleID { return }
+                    if self.fullName.isEmpty, !cloud.fullName.isEmpty {
+                        self.fullName = cloud.fullName
+                    }
+                    if self.selectedEmoji == Self.defaultEmoji, !cloud.selectedEmoji.isEmpty {
+                        self.selectedEmoji = cloud.selectedEmoji
+                    }
+                }
+            }
         } catch {
             let message = (error as? AuthError)?.errorDescription ?? error.localizedDescription
             authState = .failed(message)

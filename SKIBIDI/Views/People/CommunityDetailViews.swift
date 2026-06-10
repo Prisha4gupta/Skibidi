@@ -20,7 +20,7 @@ struct PeopleListView: View {
                 Spacer()
 
                 Button {
-                    Task { shareData = await viewModel.prepareGroupShare() }
+                    Task { shareData = await viewModel.prepareGroupShare(for: community) }
                 } label: {
                     Image(systemName: "person.badge.plus")
                         .font(.system(size: 14, weight: .semibold))
@@ -134,7 +134,7 @@ struct CommunityDashboardView: View {
                 Spacer()
 
                 Button {
-                    Task { shareData = await viewModel.prepareGroupShare() }
+                    Task { shareData = await viewModel.prepareGroupShare(for: community) }
                 } label: {
                     Image(systemName: "person.badge.plus")
                         .font(.system(size: 14, weight: .semibold))

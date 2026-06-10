@@ -10,9 +10,12 @@ class CommunityViewModel {
     var notifications: [AppNotification]
     var currentUser: User
     var activeSOSMessages: [UUID: String] = [:]
-    /// Members fetched live from the CloudKit group zone (your own record solo; everyone once
-    /// sharing is live). Empty until the first fetch completes.
-    var cloudMembers: [User] = []
+    /// Communities fetched live from CloudKit (created + joined), with their members. Mirrored
+    /// into `communities` as UI rows by `rebuildCloudCommunityRows()`.
+    private var cloudCommunities: [CloudKitService.CloudCommunity] = []
+    /// Ids of the cloud-backed rows currently in `communities`, so refreshes replace exactly
+    /// those rows and never touch the mock ones.
+    private var cloudCommunityIDs: Set<UUID> = []
 
     // MARK: - Services (not observable UI state)
     @ObservationIgnored private let locationManager = LocationManager()
@@ -107,11 +110,11 @@ class CommunityViewModel {
             await loadCurrentUserHealth()
             // Read the group first so I can adopt my own name from the cloud (cross-device) before
             // writing — otherwise sync would overwrite it with this device's default.
-            await refreshCloudMembers()
+            await refreshCloudCommunities()
             // Push my freshly-loaded real data (health + location + name) up to my iCloud DB.
             await cloudKit.syncMyData(currentUser)
             // Re-read so my freshly-written record shows in the group.
-            await refreshCloudMembers()
+            await refreshCloudCommunities()
             // Keep steps (and other metrics) live: re-fetch whenever HealthKit reports new
             // samples, so the count updates while the app stays open.
             healthService.startStepUpdates { [weak self] in
@@ -136,7 +139,7 @@ class CommunityViewModel {
             while !Task.isCancelled {
                 try? await Task.sleep(for: .seconds(12))
                 if Task.isCancelled { break }
-                await self?.refreshCloudMembers()
+                await self?.refreshCloudCommunities()
             }
         }
     }
@@ -146,59 +149,64 @@ class CommunityViewModel {
         liveRefreshTask = nil
     }
 
-    /// Stable id for the cloud-backed community, so refreshes update the same row instead of
-    /// adding duplicates. The mock communities keep their own random ids and are never touched.
-    private static let cloudCommunityID = UUID(uuidString: "00000000-0000-0000-0000-0000C10DC10D")!
-
-    /// Fetches all members in the CloudKit group zone, then surfaces them as a separate real
-    /// community ("My SKIBIDI Group") alongside the untouched mock ones.
-    func refreshCloudMembers() async {
+    /// Fetches all CloudKit communities (mine + joined) and mirrors them into the UI list.
+    func refreshCloudCommunities() async {
         do {
-            // My own record already comes back flagged `isCurrentUser` (matched by stable record
-            // name). Fall back to `appleUserID` — the stable Sign in with Apple identity — for
-            // records that the record-name match missed.
-            var fetched = try await cloudKit.fetchAllMembers()
-            if !fetched.contains(where: { $0.isCurrentUser }),
-               let myAppleID = currentUser.appleUserID, !myAppleID.isEmpty,
-               let myIndex = fetched.firstIndex(where: { $0.appleUserID == myAppleID }) {
-                fetched[myIndex].isCurrentUser = true
+            var fetched = try await cloudKit.fetchCommunities()
+            // My record comes back flagged `isCurrentUser` (stable record name). Fall back to
+            // `appleUserID` — the stable Sign in with Apple identity — for records the
+            // record-name match missed.
+            if let myAppleID = currentUser.appleUserID, !myAppleID.isEmpty {
+                for i in fetched.indices
+                where !fetched[i].members.contains(where: { $0.isCurrentUser }) {
+                    if let j = fetched[i].members.firstIndex(where: { $0.appleUserID == myAppleID }) {
+                        fetched[i].members[j].isCurrentUser = true
+                    }
+                }
             }
-            cloudMembers = fetched
-            // Cross-device name: if I never set a name on THIS device, adopt the one stored in my
-            // cloud record (set from another device). A locally-set name always wins.
+            cloudCommunities = fetched
+            // Cross-device name: if I never set a name on THIS device, adopt the one stored in
+            // my cloud record (set from another device). A locally-set name always wins.
             let hasLocalName = !(UserDefaults.standard.string(forKey: Self.displayNameKey) ?? "").isEmpty
             if !hasLocalName,
-               let me = cloudMembers.first(where: { $0.isCurrentUser }),
+               let me = fetched.flatMap(\.members).first(where: { $0.isCurrentUser }),
                !me.name.isEmpty, me.name != "Your Name" {
                 currentUser.name = me.name
             }
-            print("☁️ [CloudKit] fetched \(cloudMembers.count) member(s):", cloudMembers.map(\.name))
-            updateCloudCommunity()
+            print("☁️ [CloudKit] fetched \(fetched.count) communit(y/ies):",
+                  fetched.map { "\($0.name) [\($0.members.count)]" })
+            rebuildCloudCommunityRows()
         } catch {
-            print("❌ [CloudKit] fetch members failed:", error)
+            print("❌ [CloudKit] fetch communities failed:", error)
         }
     }
 
-    /// Rebuilds the cloud-backed community from `cloudMembers`. Removes the old one first so the
-    /// row updates in place; drops it entirely when there are no members yet.
-    private func updateCloudCommunity() {
-        communities.removeAll { $0.id == Self.cloudCommunityID }
-        guard !cloudMembers.isEmpty else { return }
-        let cloud = Community(
-            id: Self.cloudCommunityID,
-            name: "My SKIBIDI Group",
-            type: .detail,
-            imageData: nil,
-            members: cloudMembers,
-            dateActive: Date(),
-            memberCount: cloudMembers.count,
-            isLocationSharing: true,
-            isHealthSharing: true,
-            isFitnessSharing: true,
-            hasNotification: false,
-            notificationMessage: nil
-        )
-        communities.insert(cloud, at: 0)   // show the real group first
+    /// Replace the cloud-backed rows in `communities` with fresh ones (mock rows untouched)
+    /// and re-point `selectedCommunity` — it's a value copy, so an open member list would
+    /// otherwise never see new joiners.
+    private func rebuildCloudCommunityRows() {
+        communities.removeAll { cloudCommunityIDs.contains($0.id) }
+        cloudCommunityIDs = Set(cloudCommunities.map(\.id))
+        let rows = cloudCommunities.map { cloud in
+            Community(
+                id: cloud.id,
+                name: cloud.name,
+                type: .detail,
+                imageData: nil,
+                members: cloud.members,
+                dateActive: cloud.createdAt ?? Date(),
+                memberCount: cloud.members.count,
+                isLocationSharing: true,
+                isHealthSharing: true,
+                isFitnessSharing: true,
+                hasNotification: false,
+                notificationMessage: nil
+            )
+        }
+        communities.insert(contentsOf: rows, at: 0)   // real groups first
+        if let selected = selectedCommunity, cloudCommunityIDs.contains(selected.id) {
+            selectedCommunity = communities.first { $0.id == selected.id }
+        }
     }
 
     // MARK: - Identity
@@ -226,16 +234,30 @@ class CommunityViewModel {
     private func resyncSharing() {
         Task {
             await cloudKit.syncMyData(currentUser)
-            await refreshCloudMembers()
+            await refreshCloudCommunities()
         }
     }
 
-    // MARK: - Sharing
-    /// Prepares (or reuses) the group's CloudKit share, so the view can present the system invite
-    /// sheet. Returns `nil` on failure (logged) — the caller simply doesn't show the sheet.
-    func prepareGroupShare() async -> ShareSheetData? {
+    /// Creates a real CloudKit community (own zone + share) and returns the invite-sheet data
+    /// so the caller drops straight into sharing the link. `nil` on failure (logged).
+    func createCommunity(name: String) async -> ShareSheetData? {
         do {
-            let (share, container) = try await cloudKit.fetchOrCreateShare()
+            let (_, share, container) = try await cloudKit.createCommunity(named: name)
+            await cloudKit.syncMyData(currentUser)   // put my record in the new zone
+            await refreshCloudCommunities()
+            showingCreateCommunity = false
+            return ShareSheetData(share: share, container: container)
+        } catch {
+            print("❌ [Community] create failed:", error)
+            return nil
+        }
+    }
+
+    /// Invite sheet for a specific community. `nil` for mock rows or on failure (logged).
+    func prepareGroupShare(for community: Community) async -> ShareSheetData? {
+        guard let cloud = cloudCommunities.first(where: { $0.id == community.id }) else { return nil }
+        do {
+            let (share, container) = try await cloudKit.fetchOrCreateShare(for: cloud)
             return ShareSheetData(share: share, container: container)
         } catch {
             print("❌ [Share] prepare failed:", error)
@@ -243,6 +265,7 @@ class CommunityViewModel {
         }
     }
 
+    // MARK: - Health
     /// Folds the device owner's real HealthKit data onto their mock snapshot (mock stays the
     /// fallback for fields HealthKit can't supply, or when unavailable/unauthorized).
     func loadCurrentUserHealth() async {
@@ -392,27 +415,6 @@ class CommunityViewModel {
         showingCommunitySheet = true
     }
     
-    func createCommunity(name: String, type: CommunityType, memberCount: Int,
-                         locationSharing: Bool, healthSharing: Bool, fitnessSharing: Bool,
-                         dateActive: Date) {
-        let newCommunity = Community(
-            id: UUID(),
-            name: name,
-            type: type,
-            imageData: nil,
-            members: [currentUser],
-            dateActive: dateActive,
-            memberCount: memberCount,
-            isLocationSharing: locationSharing,
-            isHealthSharing: healthSharing,
-            isFitnessSharing: fitnessSharing,
-            hasNotification: false,
-            notificationMessage: nil
-        )
-        communities.append(newCommunity)
-        showingCreateCommunity = false
-    }
-
     func leaveCommunity(_ community: Community) {
         communities.removeAll { $0.id == community.id }
 

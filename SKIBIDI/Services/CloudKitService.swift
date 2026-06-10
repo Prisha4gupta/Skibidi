@@ -15,12 +15,6 @@ final class CloudKitService {
     /// CloudKit record type. Plural by project convention (matches the schema in the Console).
     static let memberRecordType = "Members"
 
-    /// Custom zone that holds the (eventually shared) community's member records.
-    /// The default zone can't be shared or change-tracked, so sharing *requires* a custom zone —
-    /// this is the foundation `CKShare` is built on. For now it's one fixed zone in the owner's
-    /// private DB; per-community zones arrive when real sharing lands.
-    static let groupZoneID = CKRecordZone.ID(zoneName: "GroupZone", ownerName: CKCurrentUserDefaultName)
-
     /// Explicit container id. We reference it directly instead of `CKContainer.default()` because
     /// the bundle id (com.bpjsr.tim) no longer matches the container name — the container was set
     /// up as `iCloud.com.bpjsr.skibidi` and kept (with all its schema) through the rename.
@@ -33,6 +27,51 @@ final class CloudKitService {
     init(container: CKContainer = CKContainer(identifier: CloudKitService.containerID)) {
         self.container = container
         self.database = container.privateCloudDatabase
+    }
+
+    // MARK: - Community zones
+
+    /// Each community is its own record zone named "community-<UUID>" — in MY private DB if I
+    /// created it, or in the shared DB if I joined via a share link. The UUID doubles as the
+    /// app-side `Community.id`, so rows stay stable across refreshes and devices.
+    static let communityZonePrefix = "community-"
+    static let communityRecordType = "CommunityInfo"
+    private static let communityInfoRecordName = "community-info"
+
+    static func communityID(fromZoneName name: String) -> UUID? {
+        guard name.hasPrefix(communityZonePrefix) else { return nil }
+        return UUID(uuidString: String(name.dropFirst(communityZonePrefix.count)))
+    }
+
+    /// A community's location in CloudKit plus everything fetched from its zone.
+    struct CloudCommunity: Identifiable {
+        let id: UUID
+        let zoneID: CKRecordZone.ID
+        let isOwned: Bool       // true = I created it (private DB); false = joined (shared DB)
+        var name: String
+        var createdAt: Date?
+        var members: [User]
+    }
+
+    /// All community zones I'm part of: zones I created (private DB) + zones I joined
+    /// (shared DB). Non-community zones — e.g. the legacy "GroupZone" — are ignored.
+    private func communityZoneRefs() async throws -> [(zoneID: CKRecordZone.ID, isOwned: Bool)] {
+        var refs: [(CKRecordZone.ID, Bool)] = []
+        for zone in try await database.allRecordZones()
+        where Self.communityID(fromZoneName: zone.zoneID.zoneName) != nil {
+            refs.append((zone.zoneID, true))
+        }
+        // The shared DB throws when iCloud is unusable — treat as "no joined communities".
+        let sharedZones = (try? await container.sharedCloudDatabase.allRecordZones()) ?? []
+        for zone in sharedZones
+        where Self.communityID(fromZoneName: zone.zoneID.zoneName) != nil {
+            refs.append((zone.zoneID, false))
+        }
+        return refs
+    }
+
+    private func databaseFor(isOwned: Bool) -> CKDatabase {
+        isOwned ? database : container.sharedCloudDatabase
     }
 
     // MARK: - Identity & location
@@ -49,28 +88,11 @@ final class CloudKitService {
         return name
     }
 
-    /// Where "the group" lives for this user.
-    private struct GroupLocation {
-        let database: CKDatabase
-        let zoneID: CKRecordZone.ID
-        let isOwned: Bool   // true = my own zone (private DB); false = a zone I accepted (shared DB)
-    }
-
-    /// Decide where the group lives: a zone I accepted (it shows up in my shared DB) wins;
-    /// otherwise my own zone in the private DB. This is the owner/participant split that makes
-    /// CloudKit sharing work — the owner reads/writes private, participants read/write shared.
-    private func resolveGroupLocation() async -> GroupLocation {
-        if let shared = try? await container.sharedCloudDatabase.allRecordZones().first {
-            return GroupLocation(database: container.sharedCloudDatabase, zoneID: shared.zoneID, isOwned: false)
-        }
-        return GroupLocation(database: database, zoneID: Self.groupZoneID, isOwned: true)
-    }
-
     // MARK: - Public API
 
-    /// High-level entry point called from the ViewModel: confirm iCloud is available, upsert
-    /// the owner's record from their live `User`, then read it back to prove the round-trip.
-    /// Never throws — failures are logged, because a sync hiccup shouldn't crash the app.
+    /// Upsert my member record into EVERY community zone I'm part of (created or joined), so
+    /// each community sees my latest data. No communities yet → nothing to sync. Never throws —
+    /// failures are logged, because a sync hiccup shouldn't crash the app.
     func syncMyData(_ user: User) async {
         do {
             let status = try await container.accountStatus()
@@ -78,94 +100,134 @@ final class CloudKitService {
                 print("☁️ [CloudKit] iCloud not available (status \(status.rawValue)). Sign in via Settings.")
                 return
             }
-
-            let loc = await resolveGroupLocation()
-            // Only the owner creates the zone; a participant writes into the zone they accepted.
-            if loc.isOwned { try await ensureZoneExists() }
-            try await upsertMyMemberRecord(from: user, in: loc)
-            print("☁️ [CloudKit] WRITE ok — my record in \(loc.isOwned ? "owned" : "shared") zone \(loc.zoneID.zoneName)")
+            let refs = try await communityZoneRefs()
+            guard !refs.isEmpty else {
+                print("☁️ [CloudKit] no communities yet — nothing to sync")
+                return
+            }
+            for ref in refs {
+                do {
+                    try await upsertMyMemberRecord(from: user,
+                                                   database: databaseFor(isOwned: ref.isOwned),
+                                                   zoneID: ref.zoneID)
+                } catch {
+                    print("❌ [CloudKit] sync to \(ref.zoneID.zoneName) failed:", error)
+                }
+            }
+            print("☁️ [CloudKit] WRITE ok — my record in \(refs.count) zone(s)")
         } catch {
             print("❌ [CloudKit] sync failed:", error)
         }
     }
 
-    // MARK: - Zone
-
-    /// Create the custom zone if it doesn't exist yet. Saving a zone that already exists is a
-    /// harmless no-op, so this is safe to call on every launch.
-    private func ensureZoneExists() async throws {
-        let zone = CKRecordZone(zoneID: Self.groupZoneID)
-        _ = try await database.save(zone)
-    }
-
     // MARK: - Sharing
 
-    /// Fetch the zone's existing share, or create one if the zone isn't shared yet. Returns the
-    /// share plus the container — both needed to present `UICloudSharingController`.
-    ///
-    /// This is **zone-wide** sharing: a single `CKShare` covers every record in `groupZoneID`, so
-    /// anyone who accepts the invite can read all members in the community (and write their own).
-    /// The share lives at the well-known record name `CKRecordNameZoneWideShare` inside the zone,
-    /// and a zone can only have one — so we reuse the existing one if it's already there.
-    func fetchOrCreateShare() async throws -> (CKShare, CKContainer) {
-        try await ensureZoneExists()
+    /// Create a brand-new community: its own zone, a `CommunityInfo` record carrying the name,
+    /// and a zone-wide share in "anyone with the link" mode (the link itself grants access —
+    /// no email lookup). Returns the share + container for the system invite sheet.
+    func createCommunity(named name: String) async throws -> (CloudCommunity, CKShare, CKContainer) {
+        let id = UUID()
+        let zoneID = CKRecordZone.ID(zoneName: Self.communityZonePrefix + id.uuidString,
+                                     ownerName: CKCurrentUserDefaultName)
+        _ = try await database.save(CKRecordZone(zoneID: zoneID))
 
-        let shareID = CKRecord.ID(recordName: CKRecordNameZoneWideShare, zoneID: Self.groupZoneID)
+        let createdAt = Date()
+        let infoID = CKRecord.ID(recordName: Self.communityInfoRecordName, zoneID: zoneID)
+        let info = CKRecord(recordType: Self.communityRecordType, recordID: infoID)
+        info["name"] = name
+        info["createdAt"] = createdAt
+        try await database.save(info)
+
+        let share = CKShare(recordZoneID: zoneID)
+        share[CKShare.SystemFieldKey.title] = name
+        share.publicPermission = .readWrite   // "anyone with the link" — no email invite dance
+        let result = try await database.modifyRecords(saving: [share], deleting: [])
+        var savedShare = share
+        if case .success(let saved) = result.saveResults[share.recordID], let s = saved as? CKShare {
+            savedShare = s   // prefer the server copy (carries the share URL)
+        }
+        let community = CloudCommunity(id: id, zoneID: zoneID, isOwned: true,
+                                       name: name, createdAt: createdAt, members: [])
+        return (community, savedShare, container)
+    }
+
+    /// Fetch every community I'm in — info + all member records per zone. My own record in
+    /// each community comes back flagged `isCurrentUser` (matched by stable record name).
+    /// Requires the `recordName` queryable index on `Members` (already set in the Console).
+    func fetchCommunities() async throws -> [CloudCommunity] {
+        let myName = try await myRecordName()
+        var communities: [CloudCommunity] = []
+        for ref in try await communityZoneRefs() {
+            guard let id = Self.communityID(fromZoneName: ref.zoneID.zoneName) else { continue }
+            let db = databaseFor(isOwned: ref.isOwned)
+
+            var name = "Community"
+            var createdAt: Date?
+            let infoID = CKRecord.ID(recordName: Self.communityInfoRecordName, zoneID: ref.zoneID)
+            if let info = try? await db.record(for: infoID) {
+                name = info["name"] as? String ?? name
+                createdAt = info["createdAt"] as? Date
+            }
+
+            let query = CKQuery(recordType: Self.memberRecordType, predicate: NSPredicate(value: true))
+            let (matches, _) = try await db.records(matching: query, inZoneWith: ref.zoneID)
+            let members: [User] = matches.compactMap { _, result in
+                guard case .success(let record) = result, var user = Self.decode(record) else { return nil }
+                if record.recordID.recordName == myName { user.isCurrentUser = true }
+                return user
+            }
+            communities.append(CloudCommunity(id: id, zoneID: ref.zoneID, isOwned: ref.isOwned,
+                                              name: name, createdAt: createdAt, members: members))
+        }
+        return communities
+    }
+
+    /// Fetch the community's existing zone-wide share — creating it for an owned zone if
+    /// missing — for presenting `UICloudSharingController`. Participants read the existing
+    /// share from the shared DB (they can re-share the link, but only the owner manages it).
+    func fetchOrCreateShare(for community: CloudCommunity) async throws -> (CKShare, CKContainer) {
+        let db = databaseFor(isOwned: community.isOwned)
+        let shareID = CKRecord.ID(recordName: CKRecordNameZoneWideShare, zoneID: community.zoneID)
         do {
-            if let existing = try await database.record(for: shareID) as? CKShare {
-                return (existing, container)        // already shared → reuse
+            if let existing = try await db.record(for: shareID) as? CKShare {
+                // Migrate pre-public shares to "anyone with the link" (owner only).
+                if community.isOwned, existing.publicPermission == .none {
+                    existing.publicPermission = .readWrite
+                    if let saved = try? await db.save(existing) as? CKShare {
+                        return (saved, container)
+                    }
+                }
+                return (existing, container)
             }
         } catch let error as CKError where error.code == .unknownItem {
-            // Not shared yet — fall through and create it.
+            // Owned zone not shared yet — fall through and create.
         }
-
-        let share = CKShare(recordZoneID: Self.groupZoneID)
-        share[CKShare.SystemFieldKey.title] = "SKIBIDI Group"
+        guard community.isOwned else { throw CKError(.unknownItem) }
+        let share = CKShare(recordZoneID: community.zoneID)
+        share[CKShare.SystemFieldKey.title] = community.name
+        share.publicPermission = .readWrite
         let result = try await database.modifyRecords(saving: [share], deleting: [])
-        // Prefer the server-saved share (it carries the share URL/metadata).
-        if case .success(let saved) = result.saveResults[share.recordID], let savedShare = saved as? CKShare {
-            return (savedShare, container)
+        if case .success(let saved) = result.saveResults[share.recordID], let s = saved as? CKShare {
+            return (s, container)
         }
         return (share, container)
     }
 
     // MARK: - Write (upsert)
 
-    /// Save my data to my own record in the given location (private zone if owner, shared zone if
-    /// participant). Fetches the existing record first (to hold the correct change tag), or
-    /// creates a fresh one if none exists — i.e. an upsert.
-    private func upsertMyMemberRecord(from user: User, in loc: GroupLocation) async throws {
-        let recordID = CKRecord.ID(recordName: try await myRecordName(), zoneID: loc.zoneID)
-
+    /// Save my data to my own record in one community zone. Fetches the existing record first
+    /// (to hold the correct change tag), or creates a fresh one — i.e. an upsert.
+    private func upsertMyMemberRecord(from user: User, database db: CKDatabase,
+                                      zoneID: CKRecordZone.ID) async throws {
+        let recordID = CKRecord.ID(recordName: try await myRecordName(), zoneID: zoneID)
         let record: CKRecord
         do {
-            record = try await loc.database.record(for: recordID)    // exists → update it
+            record = try await db.record(for: recordID)
         } catch let error as CKError where error.code == .unknownItem {
-            record = CKRecord(recordType: Self.memberRecordType, recordID: recordID)  // new
+            record = CKRecord(recordType: Self.memberRecordType, recordID: recordID)
         }
-
         Self.encode(user, into: record)
-        try await loc.database.save(record)
-    }
-
-    // MARK: - Read all (for displaying the group)
-
-    /// Fetch every member record in the group zone — from my private zone if I own the group, or
-    /// from the shared zone I accepted if I'm a participant. Solo this is just my record; once
-    /// others join and write theirs, it's everyone's.
-    /// Requires the `recordName` queryable index in the CloudKit schema (added in the Console).
-    func fetchAllMembers() async throws -> [User] {
-        let myName = try await myRecordName()
-        let loc = await resolveGroupLocation()
-        let query = CKQuery(recordType: Self.memberRecordType, predicate: NSPredicate(value: true))
-        let (matches, _) = try await loc.database.records(matching: query, inZoneWith: loc.zoneID)
-        return matches.compactMap { _, result in
-            guard case .success(let record) = result, var user = Self.decode(record) else { return nil }
-            // Identify "me" by the stable per-user record name (not a per-launch random id), so it
-            // holds across devices and relaunches.
-            if record.recordID.recordName == myName { user.isCurrentUser = true }
-            return user
-        }
+        try await db.save(record)
     }
 
     // MARK: - Mapping  (User / HealthSnapshot  ⟷  CKRecord)
