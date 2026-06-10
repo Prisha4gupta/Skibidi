@@ -366,14 +366,18 @@ final class CloudKitService {
             record["stepsDistanceKm"]  = h.stepsDistanceKm
             record["sleepHours"]       = h.sleepHours
             record["restingHeartRate"] = h.restingHeartRate
-            record["hydrationPercent"] = h.hydrationPercent
+            record["hrv"]              = h.hrv
+            record["respiratoryRate"]  = h.respiratoryRate
         } else {
             record["steps"]            = nil
             record["stepsDistanceKm"]  = nil
             record["sleepHours"]       = nil
             record["restingHeartRate"] = nil
-            record["hydrationPercent"] = nil
+            record["hrv"]              = nil
+            record["respiratoryRate"]  = nil
         }
+        // Retired in favor of hrv/respiratoryRate; clear any value older builds wrote.
+        record["hydrationPercent"] = nil
 
         // Fitness / activity rings
         if user.fitnessSharing.hasData {
@@ -416,7 +420,8 @@ final class CloudKitService {
             stepsDistanceKm:  dbl("stepsDistanceKm"),
             sleepHours:       dbl("sleepHours"),
             restingHeartRate: int("restingHeartRate"),
-            hydrationPercent: int("hydrationPercent"),
+            hrv:              dbl("hrv"),
+            respiratoryRate:  dbl("respiratoryRate"),
             moveCalories:     int("moveCalories"),
             moveGoal:         int("moveGoal"),
             exerciseMinutes:  int("exerciseMinutes"),

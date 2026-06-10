@@ -130,7 +130,7 @@ struct HealthSnapshot: Hashable {
     /// Pre-HealthKit placeholder: every metric zero, but ring goals at Apple's defaults —
     /// HealthKit supplies no goals, so zeroed goals would pin ring progress at 0 forever.
     static let empty = HealthSnapshot(
-        steps: 0, stepsDistanceKm: 0, sleepHours: 0, restingHeartRate: 0, hydrationPercent: 0,
+        steps: 0, stepsDistanceKm: 0, sleepHours: 0, restingHeartRate: 0, hrv: 0, respiratoryRate: 0,
         moveCalories: 0, moveGoal: 500, exerciseMinutes: 0, exerciseGoal: 30,
         standHours: 0, standGoal: 12, activeCalories: 0
     )
@@ -139,7 +139,8 @@ struct HealthSnapshot: Hashable {
     var stepsDistanceKm: Double
     var sleepHours: Double
     var restingHeartRate: Int
-    var hydrationPercent: Int
+    var hrv: Double            // HRV (SDNN) in ms; 0 = unavailable
+    var respiratoryRate: Double // breaths/min; 0 = unavailable
     var moveCalories: Int
     var moveGoal: Int
     var exerciseMinutes: Int
@@ -160,12 +161,22 @@ struct HealthSnapshot: Hashable {
         // gradually (it takes more to reach the cap). The trailing multipliers are each axis's max
         // point contribution.
 
-        // Readiness — how recovered they are (max 100).
-        let sleepReadiness = min(sleepHours / 8.0, 1.0) * 70.0          // 8h sleep = full recovery
-        let hrReadiness = (restingHeartRate >= 50 && restingHeartRate <= 80)
-            ? 30.0 * (1.0 - abs(Double(restingHeartRate) - 65.0) / 35.0) // calm ~65 bpm = best
-            : 5.0
-        let readiness = sleepReadiness + hrReadiness
+        // Readiness — how recovered they are (max 100). Recovery (HRV + respiratory) joins
+        // sleep and resting HR when the hardware supplies it; without any recovery data its
+        // 30 points are redistributed to sleep/HR so the scale stays 0...100.
+        let recovery = recoveryComponent
+        let hasRecovery = recovery >= 0
+
+        // Readiness weights: with recovery -> sleep 50 / HR 20 / recovery 30
+        //                    without       -> sleep 70 / HR 30 (recovery dropped, points redistributed)
+        let sleepWeight = hasRecovery ? 50.0 : 70.0
+        let hrWeight    = hasRecovery ? 20.0 : 30.0
+
+        let sleepReadiness = min(sleepHours / 8.0, 1.0) * sleepWeight   // 8h sleep = full recovery
+        let hrDeviation = min(abs(Double(restingHeartRate) - 65.0) / 35.0, 1.0) // calm ~65 bpm = best
+        let hrReadiness = hrWeight * (1.0 - hrDeviation)
+        let recoveryReadiness = hasRecovery ? recovery * 30.0 : 0.0
+        let readiness = sleepReadiness + hrReadiness + recoveryReadiness
 
         // Fatigue — how much they've exerted today (max ~100 at a hard day of travel).
         let stepsFatigue = min(Double(steps) / 15000.0, 1.0) * 50.0      // walking drains most
@@ -175,7 +186,44 @@ struct HealthSnapshot: Hashable {
 
         return Int(min(max(readiness - fatigue, 0.0), 100.0))
     }
-    
+
+    /// Recovery composite (x) — autonomic recovery, blends HRV + respiratory stability.
+    /// Sub-inputs collapse gracefully when hardware data is missing (iPhone-only / partial
+    /// Watch). Returns 0...1, or -1 when no recovery data exists at all.
+    private var recoveryComponent: Double {
+        let hasHRV  = hrv > 0
+        let hasResp = respiratoryRate > 0
+
+        let hrvComponent = min(hrv / 60.0, 1.0)                          // ~60ms SDNN = full credit
+        let respDeviation = min(abs(respiratoryRate - 14.0) / 6.0, 1.0)  // calm ~14 br/min
+        let respComponent = 1.0 - respDeviation
+
+        switch (hasHRV, hasResp) {
+        case (true, true):   return hrvComponent * 0.7 + respComponent * 0.3
+        case (true, false):  return hrvComponent
+        case (false, true):  return respComponent
+        case (false, false): return -1
+        }
+    }
+
+    /// Recovery on a 0–100 scale for display; nil when neither HRV nor respiratory data exists.
+    var recoveryScore: Int? {
+        let component = recoveryComponent
+        guard component >= 0 else { return nil }
+        return Int((component * 100).rounded())
+    }
+
+    /// Soft status word for the Recovery tile subtitle (never shows raw HRV ms).
+    var recoveryStatusText: String {
+        guard let score = recoveryScore else { return "No data" }
+        switch score {
+        case ..<34: return "Low"
+        case ..<67: return "Fair"
+        default:    return "Good"
+        }
+    }
+
+
     var moveProgress: Double {
         guard moveGoal > 0 else { return 0 }
         return min(Double(moveCalories) / Double(moveGoal), 1.0)
@@ -196,8 +244,8 @@ struct HealthSnapshot: Hashable {
             return "Suggestion: \(steps) steps already, consider a long break."
         } else if sleepHours < 6 {
             return "Suggestion: You slept less than 6 hours. Try resting early tonight."
-        } else if hydrationPercent < 50 {
-            return "Suggestion: Hydration is low. Drink more water today."
+        } else if let recovery = recoveryScore, recovery < 34 {
+            return "Suggestion: Recovery is low. Take it easy today."
         } else {
             return "Suggestion: Looking good! Keep up the healthy habits."
         }

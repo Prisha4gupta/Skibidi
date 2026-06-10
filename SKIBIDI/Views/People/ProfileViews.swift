@@ -101,11 +101,18 @@ struct MemberProfileView: View {
                             )
 
                             MetricCardView(
-                                icon: "drop.fill",
-                                title: "Hydration",
-                                value: "\(member.healthSnapshot.hydrationPercent)%",
-                                subtitle: "Today",
-                                iconColor: .metricHydration
+                                icon: "waveform.path.ecg",
+                                title: "Recovery",
+                                value: member.healthSnapshot.recoveryScore.map(String.init) ?? "--",
+                                subtitle: member.healthSnapshot.recoveryStatusText,
+                                iconColor: .metricRecovery
+                            )
+                            .accessibilityElement(children: .ignore)
+                            .accessibilityLabel("Recovery")
+                            .accessibilityValue(
+                                member.healthSnapshot.recoveryScore.map {
+                                    "\($0) out of 100, \(member.healthSnapshot.recoveryStatusText)"
+                                } ?? "No data"
                             )
                         }
                         .padding(.horizontal, 20)
@@ -254,11 +261,18 @@ struct YourProfileView: View {
                         )
                         
                         MetricCardView(
-                            icon: "drop.fill",
-                            title: "Hydration",
-                            value: "\(user.healthSnapshot.hydrationPercent)%",
-                            subtitle: "Today",
-                            iconColor: .metricHydration
+                            icon: "waveform.path.ecg",
+                            title: "Recovery",
+                            value: user.healthSnapshot.recoveryScore.map(String.init) ?? "--",
+                            subtitle: user.healthSnapshot.recoveryStatusText,
+                            iconColor: .metricRecovery
+                        )
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel("Recovery")
+                        .accessibilityValue(
+                            user.healthSnapshot.recoveryScore.map {
+                                "\($0) out of 100, \(user.healthSnapshot.recoveryStatusText)"
+                            } ?? "No data"
                         )
                     }
                     .padding(.horizontal, 20)

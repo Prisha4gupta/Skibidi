@@ -26,6 +26,8 @@ final class HealthKitService {
         if let restingHR = HKObjectType.quantityType(forIdentifier: .restingHeartRate) { types.insert(restingHR) }
         if let exercise = HKObjectType.quantityType(forIdentifier: .appleExerciseTime) { types.insert(exercise) }
         if let sleep = HKObjectType.categoryType(forIdentifier: .sleepAnalysis) { types.insert(sleep) }
+        if let hrv = HKObjectType.quantityType(forIdentifier: .heartRateVariabilitySDNN) { types.insert(hrv) }
+        if let resp = HKObjectType.quantityType(forIdentifier: .respiratoryRate) { types.insert(resp) }
     
         return types
     }
@@ -45,7 +47,7 @@ final class HealthKitService {
     }
 
     /// Reads today's metrics (and last night's sleep) and returns `base` with the live values
-    /// merged in. Fields HealthKit can't supply (goals, hydration) are kept from `base`, so the
+    /// merged in. Fields HealthKit can't supply (goals) are kept from `base`, so the
     /// snapshot — and its derived `energyScore` — stays coherent.
     func fetchTodaySnapshot(merging base: HealthSnapshot) async -> HealthSnapshot {
         guard isAvailable else { return base }
@@ -57,6 +59,8 @@ final class HealthKitService {
         async let exerciseValue = sumToday(.appleExerciseTime, unit: .minute())
         async let restingHRValue = mostRecent(.restingHeartRate, unit: HKUnit.count().unitDivided(by: .minute()))
         async let sleepValue = sleepHoursLastNight()
+        async let hrvValue = mostRecent(.heartRateVariabilitySDNN, unit: .secondUnit(with: .milli))
+        async let respValue = mostRecent(.respiratoryRate, unit: HKUnit.count().unitDivided(by: .minute()))
 
         if let steps = await stepsValue { snapshot.steps = Int(steps) }
         if let distance = await distanceValue { snapshot.stepsDistanceKm = (distance / 1000).rounded(toPlaces: 1) }
@@ -67,6 +71,10 @@ final class HealthKitService {
         if let exercise = await exerciseValue { snapshot.exerciseMinutes = Int(exercise) }
         if let hr = await restingHRValue { snapshot.restingHeartRate = Int(hr) }
         if let sleep = await sleepValue { snapshot.sleepHours = sleep.rounded(toPlaces: 1) }
+        // 0 is the model's "unavailable" sentinel — missing HRV/respiratory samples must not
+        // inherit stale values from `base`, or the recovery composite would count them as real.
+        snapshot.hrv = (await hrvValue) ?? 0
+        snapshot.respiratoryRate = (await respValue) ?? 0
 
         return snapshot
     }
