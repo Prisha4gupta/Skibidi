@@ -47,7 +47,12 @@ class CommunityViewModel {
         // initialized yet. CloudKit can't hand out the iCloud name, so the user owns it (see
         // updateDisplayName).
         var user = dataService.currentUser
-        if let savedName = UserDefaults.standard.string(forKey: Self.displayNameKey), !savedName.isEmpty {
+        // Fold the onboarding profile (saved locally on "Done!") onto the device owner, so the map
+        // pin / profile show the real name + emoji + Apple identity. Falls back to the legacy
+        // display-name key, then the mock default.
+        if let profile = UserDefaultsProfileStore().load() {
+            Self.apply(profile, to: &user)
+        } else if let savedName = UserDefaults.standard.string(forKey: Self.displayNameKey), !savedName.isEmpty {
             user.name = savedName
         }
         self.currentUser = user
@@ -62,6 +67,25 @@ class CommunityViewModel {
         locationManager.onLocationUpdate = { [weak self] coord in
             self?.handleLocationUpdate(coord)
         }
+    }
+
+    /// Fold a locally-saved onboarding profile onto a `User` (name + emoji + Apple identity).
+    /// Shared by `init` and `reloadProfileFromLocalStore()` so both stay in sync.
+    private static func apply(_ profile: StoredProfile, to user: inout User) {
+        if !profile.fullName.isEmpty { user.name = profile.fullName }
+        if !profile.selectedEmoji.isEmpty { user.emoji = profile.selectedEmoji }
+        user.appleUserID = profile.appleUserID
+    }
+
+    /// Re-read the locally-saved onboarding profile and apply it to `currentUser`.
+    ///
+    /// The app builds `CommunityViewModel` once at launch — on a first run that happens *before*
+    /// onboarding saves the profile, so `init` sees no profile and `currentUser` keeps the mock
+    /// default name/emoji. Call this when onboarding completes so the map owner reflects what the
+    /// user just entered, without waiting for the next launch.
+    func reloadProfileFromLocalStore() {
+        guard let profile = UserDefaultsProfileStore().load() else { return }
+        Self.apply(profile, to: &currentUser)
     }
 
     // MARK: - Lifecycle
@@ -98,10 +122,19 @@ class CommunityViewModel {
     func refreshCloudMembers() async {
         do {
             let fetched = try await cloudKit.fetchAllMembers()
-            // Flag my own record so the map swaps in my live data (it matches this launch's id,
-            // since syncMyData wrote it just before this fetch).
+            // Flag my own record so the map swaps in my live data. Match on `appleUserID` — the
+            // stable identity that survives across launches — not `id`, which is a fresh random
+            // UUID every launch (so a record written in a prior session would never match it,
+            // leaving the map showing my stale synced data). Fall back to `id` only when there's
+            // no Apple identity yet (e.g. mock/no sign-in), and never match nil-to-nil.
             cloudMembers = fetched.map { member in
-                guard member.id == currentUser.id else { return member }
+                let isMe: Bool
+                if let myAppleID = currentUser.appleUserID, !myAppleID.isEmpty {
+                    isMe = member.appleUserID == myAppleID
+                } else {
+                    isMe = member.id == currentUser.id
+                }
+                guard isMe else { return member }
                 var me = member
                 me.isCurrentUser = true
                 return me
@@ -226,7 +259,19 @@ class CommunityViewModel {
     func sosMessage(for user: User) -> String? {
         activeSOSMessages[user.id]
     }
-    
+
+    /// True while the current user has an active SOS broadcast (drives the "Cancel SOS" affordance).
+    var isCurrentUserSOSActive: Bool {
+        activeSOSMessages[currentUser.id] != nil
+    }
+
+    /// Clears the current user's active SOS, so the map pin drops the red override and returns to
+    /// its energy color. There was previously no way to stand down an SOS — once sent it stayed
+    /// active for the whole session.
+    func cancelSOS() {
+        activeSOSMessages[currentUser.id] = nil
+    }
+
     // MARK: - Actions
     func selectCommunity(_ community: Community) {
         selectedCommunity = community

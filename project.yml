@@ -55,6 +55,10 @@ targets:
       path: SKIBIDI/SKIBIDI.entitlements
       properties:
         aps-environment: development
+        # Sign in with Apple. Real auth requires this capability enabled on the App ID (paid
+        # Apple Developer account); the Simulator/previews use MockAuthService instead.
+        com.apple.developer.applesignin:
+          - Default
         com.apple.developer.icloud-container-identifiers:
           - iCloud.com.bpjsr.skibidi
         com.apple.developer.icloud-services:

@@ -11,16 +11,23 @@ struct PeopleMapView: View {
             Map(position: $viewModel.mapCameraPosition) {
 
                 ForEach(viewModel.visibleMapMembers) { member in
+                    let sos = viewModel.sosMessage(for: member)
                     Annotation("", coordinate: member.coordinate) {
                         CommunityPinView(
                             user: member,
-                            sosMessage: viewModel.sosMessage(for: member)
+                            sosMessage: sos
                         )
                             .onTapGesture {
                                 withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
                                     viewModel.selectMember(member)
                                 }
                             }
+                            // `User.==` compares by `id` only, so SwiftUI treats a member whose
+                            // energy/health just loaded as unchanged and skips redrawing the pin —
+                            // leaving it on the stale launch value (e.g. red) until some other
+                            // input changes. Key the pin's identity to the values that actually
+                            // drive its color so it refreshes when energy loads or SOS toggles.
+                            .id("\(member.id)|\(member.displayedEnergyScore ?? -1)|\(member.locationSharing.rawValue)|\(sos ?? "")")
                     }
                 }
             }

@@ -12,7 +12,7 @@ struct CommunitiesSheetView: View {
             
 
             HStack(spacing: 12) {
-                Text("Communities")
+                Text("Teams")
                     .font(.title2.bold())
                 
                 Spacer()

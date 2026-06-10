@@ -191,6 +191,27 @@ struct YourProfileView: View {
                     SuggestionBanner(text: user.healthSnapshot.suggestion)
                         .padding(.horizontal, 20)
 
+                    // Shown only while an SOS is active. Standing it down clears the broadcast so
+                    // the map pin drops its red override and returns to the energy color.
+                    if viewModel.isCurrentUserSOSActive {
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.25)) {
+                                viewModel.cancelSOS()
+                            }
+                        } label: {
+                            HStack(spacing: 8) {
+                                Image(systemName: "xmark.circle.fill")
+                                Text("Cancel SOS")
+                                    .fontWeight(.semibold)
+                            }
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(Color.energyCritical, in: Capsule())
+                        }
+                        .padding(.horizontal, 20)
+                    }
+
                     HStack(alignment: .top, spacing: 12) {
                         EnergyScoreView(
                             score: user.healthSnapshot.energyScore,

@@ -165,7 +165,8 @@ final class CloudKitService {
     /// `Double`, and `String` bridge to CloudKit number/string types automatically. Enums are
     /// stored as their raw `String` so they survive the round-trip unambiguously.
     static func encode(_ user: User, into record: CKRecord) {
-        record["userUUID"]        = user.id.uuidString          // keep the app-side identity
+        record["userUUID"]        = user.id.uuidString          // transient app-local id (per launch)
+        record["appleUserID"]     = user.appleUserID            // stable owner identity across launches
         record["displayName"]     = user.name
         record["emoji"]           = user.emoji
         record["status"]          = user.status.rawValue
@@ -205,6 +206,7 @@ final class CloudKitService {
         // independent `let`s each check trivially and read just as clearly.
         let int: (String) -> Int = { record[$0] as? Int ?? 0 }
         let dbl: (String) -> Double = { record[$0] as? Double ?? 0 }
+        let appleUserID = record["appleUserID"] as? String
 
         let snapshot = HealthSnapshot(
             steps:            int("steps"),
@@ -223,6 +225,7 @@ final class CloudKitService {
 
         return User(
             id: id,
+            appleUserID: appleUserID,
             name: record["displayName"] as? String ?? "Unknown",
             emoji: record["emoji"] as? String ?? "👤",
             isCurrentUser: false,

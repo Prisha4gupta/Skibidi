@@ -51,6 +51,11 @@ enum SharingState: String, Codable, Hashable, CaseIterable {
 // MARK: - User Model
 struct User: Identifiable, Hashable {
     let id: UUID
+    /// Apple's stable Sign in with Apple identifier (`ASAuthorizationAppleIDCredential.user`).
+    /// Durable across launches/devices for the same Apple account — unlike `id`, which is a
+    /// transient app-local UUID. `nil` until the user signs in during onboarding. This is the
+    /// key we sync to CloudKit and use to recognize a returning user.
+    var appleUserID: String? = nil
     var name: String
     var emoji: String
     var isCurrentUser: Bool
@@ -130,14 +135,31 @@ struct HealthSnapshot: Hashable {
     var activeCalories: Int
     
     var energyScore: Int {
-        // Weighted formula: steps 40%, sleep 20%, heartRate 20%, activeCalories 20%
-        let stepsScore = min(Double(steps) / 10000.0, 1.0) * 40.0
-        let sleepScore = min(sleepHours / 8.0, 1.0) * 20.0
-        let hrScore = (restingHeartRate >= 50 && restingHeartRate <= 80)
-            ? 20.0 * (1.0 - abs(Double(restingHeartRate) - 65.0) / 35.0)
+        // Option 3 — "readiness minus exertion" fatigue model. Energy = how tired a traveler is:
+        // it starts high after good rest (readiness) and drains as they walk/exert through the day
+        // (fatigue). Low score = tired. Result is clamped to 0...100 so the existing
+        // `energyColor` / `energyStatusText` thresholds still apply.
+        //
+        // Tuning: the reference numbers below (the divisors like 15000.0) set how fast each input
+        // saturates. LOWERING a reference number makes people tire faster / recover quicker on that
+        // axis (it takes less to reach the cap); RAISING it makes people tire slower / recover more
+        // gradually (it takes more to reach the cap). The trailing multipliers are each axis's max
+        // point contribution.
+
+        // Readiness — how recovered they are (max 100).
+        let sleepReadiness = min(sleepHours / 8.0, 1.0) * 70.0          // 8h sleep = full recovery
+        let hrReadiness = (restingHeartRate >= 50 && restingHeartRate <= 80)
+            ? 30.0 * (1.0 - abs(Double(restingHeartRate) - 65.0) / 35.0) // calm ~65 bpm = best
             : 5.0
-        let calScore = min(Double(activeCalories) / 500.0, 1.0) * 20.0
-        return Int(stepsScore + sleepScore + hrScore + calScore)
+        let readiness = sleepReadiness + hrReadiness
+
+        // Fatigue — how much they've exerted today (max ~100 at a hard day of travel).
+        let stepsFatigue = min(Double(steps) / 15000.0, 1.0) * 50.0      // walking drains most
+        let calorieFatigue = min(Double(activeCalories) / 600.0, 1.0) * 30.0 // effort burned
+        let exerciseFatigue = min(Double(exerciseMinutes) / 90.0, 1.0) * 20.0 // sustained activity
+        let fatigue = stepsFatigue + calorieFatigue + exerciseFatigue
+
+        return Int(min(max(readiness - fatigue, 0.0), 100.0))
     }
     
     var moveProgress: Double {
