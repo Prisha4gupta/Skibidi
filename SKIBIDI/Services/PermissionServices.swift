@@ -4,13 +4,12 @@ import UserNotifications
 
 // MARK: - Onboarding permission policy
 //
-// IMPORTANT: During onboarding we only RECORD INTENT — i.e. which toggles the user switched on
-// (see `OnboardingViewModel`). We deliberately do NOT call any `request()` here while the user is
-// onboarding. The real system prompt is fired later, at the point of use (when the feature that
-// needs the permission actually runs — e.g. health is requested by `loadCurrentUserHealth()` when
-// the map first reads it). This keeps onboarding working on the Simulator and avoids the current
-// provisioning-profile entitlement gaps for HealthKit / Push. Each service below therefore exposes
-// `request()` for that *later* point-of-use call, not for onboarding.
+// The onboarding toggles are the SINGLE source of truth. On "Done", `OnboardingViewModel`
+// `requestEnabledPermissions()` calls `request()` below for each toggle the user left on — that's
+// the one and only place the system prompt fires. The map then *uses* the granted capabilities
+// gated on the same saved intents (`CommunityViewModel.onAppear`) and never re-prompts, so the
+// user isn't asked twice. The toggles are also persisted (`StoredProfile`) so the gate survives
+// relaunches. Each service still exposes `request()` as the prompt seam; mocks stub it for tests.
 //
 // All three follow the project's DI shape (à la `AuthServiceProtocol`): a `@MainActor protocol`
 // with a `Real…` conformer for devices and a `Mock…` conformer for previews/tests.
