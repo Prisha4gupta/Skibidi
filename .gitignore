@@ -7,3 +7,6 @@
 
 # Local signing — each developer's own team ID (copy from Local.xcconfig.example)
 Local.xcconfig
+
+# Xcode build output
+DerivedData/
