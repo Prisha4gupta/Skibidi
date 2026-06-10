@@ -51,7 +51,6 @@
 		0DB0CA7AEFFB6C4F6689731F /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManager.swift; sourceTree = "<group>"; };
 		100820E49C205629BCE2BD46 /* CreateCommunityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateCommunityView.swift; sourceTree = "<group>"; };
 		18029A820237FE81EFA8AD1D /* ViewModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels.swift; sourceTree = "<group>"; };
-		20831262C073DA785F2D4F4B /* CloudKitArchitecture.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CloudKitArchitecture.md; sourceTree = "<group>"; };
 		277DB41FB418D0AB115876CA /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		32B1E0C7AED5992839072379 /* CommunitiesSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommunitiesSheetView.swift; sourceTree = "<group>"; };
 		38FD4D68FA47A415BC0B0D37 /* SKIBIDIApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKIBIDIApp.swift; sourceTree = "<group>"; };
@@ -82,18 +81,10 @@
 		ED898E98345565D3E5AD9133 /* ProfileViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViews.swift; sourceTree = "<group>"; };
 		F0902389740698E30F7989B4 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		FBCF1853203F1593EC214D99 /* HealthKitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitService.swift; sourceTree = "<group>"; };
-		"TEMP_FCF3C69D-00A2-4957-B296-1B43C6979B28" /* Local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Local.xcconfig; sourceTree = "<group>"; };
+		"TEMP_F3CFBE01-D72D-42B0-8EF9-7C099C2B7226" /* Local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Local.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
-		0C7E54D154C1D30BF332CE82 /* Documentation */ = {
-			isa = PBXGroup;
-			children = (
-				20831262C073DA785F2D4F4B /* CloudKitArchitecture.md */,
-			);
-			path = Documentation;
-			sourceTree = "<group>";
-		};
 		10E8CEE9FA1992B0B96F169B /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -159,10 +150,9 @@
 		966AF4115E83F59BC4BA3223 = {
 			isa = PBXGroup;
 			children = (
-				0C7E54D154C1D30BF332CE82 /* Documentation */,
 				DFC9D088F7081D1DA99A6224 /* SKIBIDI */,
 				10E8CEE9FA1992B0B96F169B /* Products */,
-				D0EAC2102FD9016400CA887A /* Recovered References */,
+				B73B16E32FD925C300E69702 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -173,6 +163,14 @@
 				18029A820237FE81EFA8AD1D /* ViewModels.swift */,
 			);
 			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		B73B16E32FD925C300E69702 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				"TEMP_F3CFBE01-D72D-42B0-8EF9-7C099C2B7226" /* Local.xcconfig */,
+			);
+			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 		BB20421DB1C21DC9C8C9E850 /* Models */ = {
@@ -205,14 +203,6 @@
 				DE02C855B4992635552733D6 /* ProfileSyncService.swift */,
 			);
 			path = Services;
-			sourceTree = "<group>";
-		};
-		D0EAC2102FD9016400CA887A /* Recovered References */ = {
-			isa = PBXGroup;
-			children = (
-				"TEMP_FCF3C69D-00A2-4957-B296-1B43C6979B28" /* Local.xcconfig */,
-			);
-			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 		DFC9D088F7081D1DA99A6224 /* SKIBIDI */ = {
@@ -354,7 +344,7 @@
 /* Begin XCBuildConfiguration section */
 		41F1D6D2278A92B5AD77D556 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = "TEMP_FCF3C69D-00A2-4957-B296-1B43C6979B28" /* Local.xcconfig */;
+			baseConfigurationReference = "TEMP_F3CFBE01-D72D-42B0-8EF9-7C099C2B7226" /* Local.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = SKIBIDI/SKIBIDI.entitlements;
@@ -374,7 +364,7 @@
 		};
 		46EF12D472528BE08ECEA389 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = "TEMP_FCF3C69D-00A2-4957-B296-1B43C6979B28" /* Local.xcconfig */;
+			baseConfigurationReference = "TEMP_F3CFBE01-D72D-42B0-8EF9-7C099C2B7226" /* Local.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = SKIBIDI/SKIBIDI.entitlements;
@@ -427,7 +417,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -494,7 +484,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;

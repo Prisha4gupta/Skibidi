@@ -51,6 +51,7 @@ final class CloudKitService {
         var name: String
         var createdAt: Date?
         var members: [User]
+        var imageData: Data?    // community avatar, stored as a CKAsset and loaded back into Data
     }
 
     /// All community zones I'm part of: zones I created (private DB) + zones I joined
@@ -93,7 +94,10 @@ final class CloudKitService {
     /// Upsert my member record into EVERY community zone I'm part of (created or joined), so
     /// each community sees my latest data. No communities yet → nothing to sync. Never throws —
     /// failures are logged, because a sync hiccup shouldn't crash the app.
-    func syncMyData(_ user: User) async {
+    /// `sosCommunityIDs` controls which community zones carry my active SOS message — that's how
+    /// the "Send to" audience is enforced. `nil` = broadcast my SOS to every zone; a set = write it
+    /// only to those communities and clear it from the rest; an empty set = clear it everywhere.
+    func syncMyData(_ user: User, sosCommunityIDs: Set<UUID>? = nil) async {
         do {
             let status = try await container.accountStatus()
             guard status == .available else {
@@ -106,8 +110,16 @@ final class CloudKitService {
                 return
             }
             for ref in refs {
+                // Strip my SOS out of any zone that isn't a chosen target, so the message reaches
+                // exactly the audience I picked (and nobody else).
+                var scoped = user
+                if let ids = sosCommunityIDs,
+                   let cid = Self.communityID(fromZoneName: ref.zoneID.zoneName),
+                   !ids.contains(cid) {
+                    scoped.sosMessage = nil
+                }
                 do {
-                    try await upsertMyMemberRecord(from: user,
+                    try await upsertMyMemberRecord(from: scoped,
                                                    database: databaseFor(isOwned: ref.isOwned),
                                                    zoneID: ref.zoneID)
                 } catch {
@@ -125,7 +137,7 @@ final class CloudKitService {
     /// Create a brand-new community: its own zone, a `CommunityInfo` record carrying the name,
     /// and a zone-wide share in "anyone with the link" mode (the link itself grants access —
     /// no email lookup). Returns the share + container for the system invite sheet.
-    func createCommunity(named name: String) async throws -> (CloudCommunity, CKShare, CKContainer) {
+    func createCommunity(named name: String, imageData: Data? = nil) async throws -> (CloudCommunity, CKShare, CKContainer) {
         let id = UUID()
         let zoneID = CKRecordZone.ID(zoneName: Self.communityZonePrefix + id.uuidString,
                                      ownerName: CKCurrentUserDefaultName)
@@ -136,6 +148,9 @@ final class CloudKitService {
         let info = CKRecord(recordType: Self.communityRecordType, recordID: infoID)
         info["name"] = name
         info["createdAt"] = createdAt
+        if let imageData, let asset = Self.makeImageAsset(imageData) {
+            info["image"] = asset
+        }
         try await database.save(info)
 
         let share = CKShare(recordZoneID: zoneID)
@@ -147,8 +162,24 @@ final class CloudKitService {
             savedShare = s   // prefer the server copy (carries the share URL)
         }
         let community = CloudCommunity(id: id, zoneID: zoneID, isOwned: true,
-                                       name: name, createdAt: createdAt, members: [])
+                                       name: name, createdAt: createdAt, members: [],
+                                       imageData: imageData)
         return (community, savedShare, container)
+    }
+
+    /// A `CKAsset` must be backed by a file on disk, so spill the avatar bytes to a temp file
+    /// and hand CloudKit the URL — it copies the contents at save time.
+    private static func makeImageAsset(_ data: Data) -> CKAsset? {
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString)
+            .appendingPathExtension("jpg")
+        do {
+            try data.write(to: url)
+            return CKAsset(fileURL: url)
+        } catch {
+            print("❌ [CloudKit] failed to stage community image asset:", error)
+            return nil
+        }
     }
 
     /// Fetch every community I'm in — info + all member records per zone. My own record in
@@ -163,10 +194,14 @@ final class CloudKitService {
 
             var name = "Community"
             var createdAt: Date?
+            var imageData: Data?
             let infoID = CKRecord.ID(recordName: Self.communityInfoRecordName, zoneID: ref.zoneID)
             if let info = try? await db.record(for: infoID) {
                 name = info["name"] as? String ?? name
                 createdAt = info["createdAt"] as? Date
+                if let asset = info["image"] as? CKAsset, let url = asset.fileURL {
+                    imageData = try? Data(contentsOf: url)
+                }
             }
 
             let query = CKQuery(recordType: Self.memberRecordType, predicate: NSPredicate(value: true))
@@ -177,7 +212,8 @@ final class CloudKitService {
                 return user
             }
             communities.append(CloudCommunity(id: id, zoneID: ref.zoneID, isOwned: ref.isOwned,
-                                              name: name, createdAt: createdAt, members: members))
+                                              name: name, createdAt: createdAt, members: members,
+                                              imageData: imageData))
         }
         return communities
     }
@@ -211,6 +247,28 @@ final class CloudKitService {
             return (s, container)
         }
         return (share, container)
+    }
+
+    // MARK: - Leave / delete
+
+    /// Remove a community from my world.
+    /// Owner → delete the zone outright; its records and share die with it, so the group
+    /// dissolves for everyone (CloudKit has no ownership transfer — that's the deal).
+    /// Participant → delete my member record (so others stop seeing me), then drop the zone
+    /// from my shared DB, which ends my share participation; the owner's data is untouched.
+    /// Throws on failure so the caller keeps the row — otherwise the next poll would resurrect
+    /// a community we only pretended to remove.
+    func removeCommunity(_ community: CloudCommunity) async throws {
+        if community.isOwned {
+            _ = try await database.modifyRecordZones(saving: [], deleting: [community.zoneID])
+        } else {
+            let db = container.sharedCloudDatabase
+            // Best-effort: leaving works without this, but my stale record would linger.
+            let myID = CKRecord.ID(recordName: try await myRecordName(), zoneID: community.zoneID)
+            _ = try? await db.deleteRecord(withID: myID)
+            _ = try await db.modifyRecordZones(saving: [], deleting: [community.zoneID])
+        }
+        print("☁️ [CloudKit] removed community \(community.name) (\(community.isOwned ? "deleted" : "left"))")
     }
 
     // MARK: - Write (upsert)
@@ -248,6 +306,9 @@ final class CloudKitService {
         record["locationSharing"] = user.locationSharing.rawValue
         record["healthSharing"]   = user.healthSharing.rawValue
         record["fitnessSharing"]  = user.fitnessSharing.rawValue
+        // Emergency SOS. Setting `nil` deletes the field from this zone's record, so standing the
+        // SOS down (or never targeting this community) clears the red pin for that audience.
+        record["sosMessage"]      = user.sosMessage
 
         let h = user.healthSnapshot
 
@@ -339,6 +400,7 @@ final class CloudKitService {
             locationSharing: (record["locationSharing"] as? String).flatMap(SharingState.init) ?? .active,
             healthSharing: (record["healthSharing"] as? String).flatMap(SharingState.init) ?? .active,
             fitnessSharing: (record["fitnessSharing"] as? String).flatMap(SharingState.init) ?? .active,
+            sosMessage: record["sosMessage"] as? String,
             ringColor: (record["ringColor"] as? String).flatMap(User.RingColor.init) ?? .pink
         )
     }

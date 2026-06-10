@@ -18,7 +18,7 @@ settings:
     # CKSharingSupported must be a real Boolean — the INFOPLIST_KEY_ generation path drops it.
     GENERATE_INFOPLIST_FILE: NO
     MARKETING_VERSION: "1.0"
-    CURRENT_PROJECT_VERSION: "1"
+    CURRENT_PROJECT_VERSION: "2"
 
 targets:
   SKIBIDI:
@@ -52,8 +52,6 @@ targets:
         NSHealthUpdateUsageDescription: "SKIBIDI writes health data to track your wellness activities."
     sources:
       - path: SKIBIDI
-      - path: Documentation
-        buildPhase: none
     entitlements:
       path: SKIBIDI/SKIBIDI.entitlements
       properties:

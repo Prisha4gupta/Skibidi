@@ -60,13 +60,6 @@ struct SettingsView: View {
                                     set: { communityVM.setHealthSharing($0) }
                                 )
                             )
-                            
-                            Divider().padding(.vertical, 8)
-                            
-                            settingsToggle(
-                                title: "Weather",
-                                isOn: $settingsVM.isWeatherEnabled
-                            )
                         }
                     }
                     
@@ -150,8 +143,13 @@ struct SettingsView: View {
                                     .padding(.vertical, 8)
                             } else {
                                 ForEach(communityVM.communities) { community in
-                                    SwipeToDeleteCommunityRow(community: community) {
-                                        communityVM.leaveCommunity(community)
+                                    SwipeToDeleteCommunityRow(
+                                        community: community,
+                                        // Owner deletes the group for everyone; a participant
+                                        // just leaves — make the swipe action say which.
+                                        actionLabel: communityVM.ownsCommunity(community) == false ? "Leave" : "Delete"
+                                    ) {
+                                        Task { await communityVM.leaveCommunity(community) }
                                     }
 
                                     if community.id != communityVM.communities.last?.id {
@@ -188,11 +186,11 @@ struct SettingsView: View {
                 settingsVM.showingLeaveCommunity = false
             }
             Button("Leave", role: .destructive) {
-                communityVM.leaveAllCommunities()
+                Task { await communityVM.leaveAllCommunities() }
                 settingsVM.showingLeaveCommunity = false
             }
         } message: {
-            Text("Are you sure you want to leave all the communities? This action cannot be undone.")
+            Text("Communities you own will be deleted for everyone in them; the rest you'll just leave. This action cannot be undone.")
         }
     }
 
@@ -217,6 +215,9 @@ struct SettingsView: View {
 
 struct SwipeToDeleteCommunityRow: View {
     let community: Community
+    /// "Delete" for communities I own (removal dissolves them for everyone), "Leave" for ones
+    /// I joined.
+    var actionLabel: String = "Delete"
     let onDelete: () -> Void
 
     @State private var dragOffset: CGFloat = 0
@@ -226,9 +227,9 @@ struct SwipeToDeleteCommunityRow: View {
     var body: some View {
         ZStack(alignment: .leading) {
             HStack(spacing: 10) {
-                Image(systemName: "trash.fill")
+                Image(systemName: actionLabel == "Leave" ? "rectangle.portrait.and.arrow.right" : "trash.fill")
                     .font(.system(size: 15, weight: .semibold))
-                Text("Delete")
+                Text(actionLabel)
                     .font(.caption.weight(.semibold))
                 Spacer()
             }

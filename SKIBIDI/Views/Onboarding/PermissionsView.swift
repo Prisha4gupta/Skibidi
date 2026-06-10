@@ -3,9 +3,10 @@ import SwiftUI
 /// Screen 6 — "Let's set up your access". Three permission rows (Location, Health, Notifications),
 /// each icon + label + toggle, plus a "Done!" pill that completes onboarding.
 ///
-/// The toggles RECORD INTENT only — see `PermissionServices`. No system prompt is fired here; the
-/// real requests happen later at point-of-use. `onDone` is invoked after the draft is committed
-/// (Phase 4 will save locally first, then flip `hasOnboarded`).
+/// Tapping "Done!" fires the real system prompts for whichever toggles are on (the single place we
+/// ask — see `OnboardingViewModel.requestEnabledPermissions`), then commits the profile. The map
+/// later uses these grants gated on the saved intents and never re-prompts. `onDone` leaves
+/// onboarding once the local save succeeds.
 struct PermissionsView: View {
     @Bindable var viewModel: OnboardingViewModel
     /// Called when the user taps "Done!". The app uses this to leave onboarding.
@@ -53,8 +54,12 @@ struct PermissionsView: View {
                 Spacer()
 
                 Button {
-                    // Flip out of onboarding only after the local save succeeds (local-first).
-                    if viewModel.completeOnboarding() { onDone() }
+                    // Ask the system for the enabled permissions HERE (the one place we prompt),
+                    // then flip out of onboarding once the local save succeeds (local-first).
+                    Task {
+                        await viewModel.requestEnabledPermissions()
+                        if viewModel.completeOnboarding() { onDone() }
+                    }
                 } label: {
                     Text("Done!")
                         .font(.headline)

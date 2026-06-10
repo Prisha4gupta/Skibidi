@@ -9,7 +9,10 @@ class CommunityViewModel {
     var communities: [Community]
     var notifications: [AppNotification]
     var currentUser: User
-    var activeSOSMessages: [UUID: String] = [:]
+    /// Which audience my active SOS targets, mirroring the "Send to" picker: `nil` while
+    /// `currentUser.sosMessage != nil` means broadcast to all groups & people; a community id
+    /// means that group only. Drives `currentSOSTargets`, which scopes every CloudKit sync.
+    @ObservationIgnored private var sosTargetCommunityID: UUID?
     /// Communities fetched live from CloudKit (created + joined), with their members. Mirrored
     /// into `communities` as UI rows by `rebuildCloudCommunityRows()`.
     private var cloudCommunities: [CloudKitService.CloudCommunity] = []
@@ -27,6 +30,14 @@ class CommunityViewModel {
     /// Once the user has manually moved the map (or picked a community) we stop auto-recentering
     /// on each new location fix, so we don't fight the user's panning.
     @ObservationIgnored private var hasAutoRecentered = false
+
+    // MARK: - Permission intents (from onboarding)
+    // The onboarding toggles are the single source of truth for whether we track at all. We load
+    // them from the saved profile and gate `onAppear` on them — the system prompt already happened
+    // during onboarding, so the map never re-requests. Defaulted on for installs with no saved
+    // profile yet (the map falls back to the previous behavior until onboarding writes the intents).
+    @ObservationIgnored private var locationIntent = true
+    @ObservationIgnored private var healthIntent = true
     
     // MARK: - Navigation State
     var selectedCommunity: Community?
@@ -64,6 +75,10 @@ class CommunityViewModel {
         // display-name key, then the mock default.
         if let profile = UserDefaultsProfileStore().load() {
             Self.apply(profile, to: &user)
+            // Capture the onboarding permission toggles for `onAppear` gating. Plain stored-property
+            // assignment, so it's allowed here before the rest of `self` is initialized.
+            locationIntent = profile.locationIntent
+            healthIntent = profile.healthIntent
         } else if let savedName = UserDefaults.standard.string(forKey: Self.displayNameKey), !savedName.isEmpty {
             user.name = savedName
         }
@@ -87,7 +102,7 @@ class CommunityViewModel {
         ) { [weak self] _ in
             Task { @MainActor [weak self] in
                 guard let self else { return }
-                await self.cloudKit.syncMyData(self.currentUser)
+                await self.cloudKit.syncMyData(self.currentUser, sosCommunityIDs: self.currentSOSTargets)
                 await self.refreshCloudCommunities()
             }
         }
@@ -110,27 +125,46 @@ class CommunityViewModel {
     func reloadProfileFromLocalStore() {
         guard let profile = UserDefaultsProfileStore().load() else { return }
         Self.apply(profile, to: &currentUser)
+        loadPermissionIntents()
+    }
+
+    /// Pull the onboarding permission toggles off the saved profile so `onAppear` can gate tracking
+    /// on them. No profile yet (pre-onboarding launch) → keep the defaults. The OS prompt itself
+    /// already happened in onboarding; here we only decide whether to *use* the granted capability.
+    private func loadPermissionIntents() {
+        guard let profile = UserDefaultsProfileStore().load() else { return }
+        locationIntent = profile.locationIntent
+        healthIntent = profile.healthIntent
     }
 
     // MARK: - Lifecycle
-    /// Called from the map's `.onAppear`: requests location + HealthKit permission, starts
-    /// location updates, and loads the current user's real health metrics.
+    /// Called from the map's `.onAppear`. Permissions were already requested during onboarding, so
+    /// we do NOT prompt here — we only *use* the capabilities the user opted into via the onboarding
+    /// toggles (`locationIntent` / `healthIntent`). A toggle left off means we never start that
+    /// tracking, so the onboarding choice is the single source of truth.
     func onAppear() {
-        locationManager.requestAuthorization()
-        locationManager.start()
+        // Location: start only if opted in. `start()` itself no-ops unless the OS granted access.
+        if locationIntent {
+            locationManager.start()
+        }
         Task {
-            await loadCurrentUserHealth()
+            // Health: read real metrics only if opted in (otherwise the mock snapshot stands).
+            if healthIntent {
+                await loadCurrentUserHealth()
+            }
             // Read the group first so I can adopt my own name from the cloud (cross-device) before
             // writing — otherwise sync would overwrite it with this device's default.
             await refreshCloudCommunities()
             // Push my freshly-loaded real data (health + location + name) up to my iCloud DB.
-            await cloudKit.syncMyData(currentUser)
+            await cloudKit.syncMyData(currentUser, sosCommunityIDs: currentSOSTargets)
             // Re-read so my freshly-written record shows in the group.
             await refreshCloudCommunities()
             // Keep steps (and other metrics) live: re-fetch whenever HealthKit reports new
             // samples, so the count updates while the app stays open.
-            healthService.startStepUpdates { [weak self] in
-                Task { await self?.loadCurrentUserHealth() }
+            if healthIntent {
+                healthService.startStepUpdates { [weak self] in
+                    Task { await self?.loadCurrentUserHealth() }
+                }
             }
             startLiveRefresh()
         }
@@ -170,7 +204,7 @@ class CommunityViewModel {
             // or an earlier sync failed — write my record now and re-fetch, so I show up without
             // waiting for a relaunch. Idempotent; at worst it retries on the next poll tick.
             if fetched.contains(where: { c in !c.members.contains(where: { $0.isCurrentUser }) }) {
-                await cloudKit.syncMyData(currentUser)
+                await cloudKit.syncMyData(currentUser, sosCommunityIDs: currentSOSTargets)
                 fetched = try await cloudKit.fetchCommunities()
                 markMyRecords(in: &fetched)
             }
@@ -215,7 +249,7 @@ class CommunityViewModel {
                 id: cloud.id,
                 name: cloud.name,
                 type: .detail,
-                imageData: nil,
+                imageData: cloud.imageData,
                 members: cloud.members,
                 dateActive: cloud.createdAt ?? Date(),
                 memberCount: cloud.members.count,
@@ -243,7 +277,7 @@ class CommunityViewModel {
         guard !trimmed.isEmpty else { return }
         currentUser.name = trimmed
         UserDefaults.standard.set(trimmed, forKey: Self.displayNameKey)
-        Task { await cloudKit.syncMyData(currentUser) }
+        Task { await cloudKit.syncMyData(currentUser, sosCommunityIDs: currentSOSTargets) }
     }
 
     // MARK: - Sharing toggles (M6)
@@ -256,17 +290,17 @@ class CommunityViewModel {
 
     private func resyncSharing() {
         Task {
-            await cloudKit.syncMyData(currentUser)
+            await cloudKit.syncMyData(currentUser, sosCommunityIDs: currentSOSTargets)
             await refreshCloudCommunities()
         }
     }
 
     /// Creates a real CloudKit community (own zone + share) and returns the invite-sheet data
     /// so the caller drops straight into sharing the link. `nil` on failure (logged).
-    func createCommunity(name: String) async -> ShareSheetData? {
+    func createCommunity(name: String, imageData: Data? = nil) async -> ShareSheetData? {
         do {
-            let (_, share, container) = try await cloudKit.createCommunity(named: name)
-            await cloudKit.syncMyData(currentUser)   // put my record in the new zone
+            let (_, share, container) = try await cloudKit.createCommunity(named: name, imageData: imageData)
+            await cloudKit.syncMyData(currentUser, sosCommunityIDs: currentSOSTargets)   // put my record in the new zone
             await refreshCloudCommunities()
             showingCreateCommunity = false
             return ShareSheetData(share: share, container: container)
@@ -354,20 +388,40 @@ class CommunityViewModel {
         return result
     }
 
+    /// SOS to render on a pin. My own comes from the local source of truth (`currentUser`) so it
+    /// shows instantly; everyone else's comes from their CloudKit-synced record, which only carries
+    /// the message if I'm in an audience the sender chose.
     func sosMessage(for user: User) -> String? {
-        activeSOSMessages[user.id]
+        user.id == currentUser.id ? currentUser.sosMessage : user.sosMessage
     }
 
     /// True while the current user has an active SOS broadcast (drives the "Cancel SOS" affordance).
     var isCurrentUserSOSActive: Bool {
-        activeSOSMessages[currentUser.id] != nil
+        currentUser.sosMessage != nil
+    }
+
+    /// The community zones my active SOS should be written into (see `CloudKitService.syncMyData`):
+    /// empty = no SOS anywhere, `nil` = broadcast to all, a single id = that group only.
+    private var currentSOSTargets: Set<UUID>? {
+        guard currentUser.sosMessage != nil else { return [] }
+        if let id = sosTargetCommunityID { return [id] }
+        return nil
+    }
+
+    /// Pushes my current SOS state to CloudKit scoped to its chosen audience, then refreshes so the
+    /// change (or stand-down) is reflected locally.
+    private func syncSOS() async {
+        await cloudKit.syncMyData(currentUser, sosCommunityIDs: currentSOSTargets)
+        await refreshCloudCommunities()
     }
 
     /// Clears the current user's active SOS, so the map pin drops the red override and returns to
-    /// its energy color. There was previously no way to stand down an SOS — once sent it stayed
-    /// active for the whole session.
+    /// its energy color — and removes the message from CloudKit so it disappears for everyone it
+    /// was sent to, not just locally.
     func cancelSOS() {
-        activeSOSMessages[currentUser.id] = nil
+        currentUser.sosMessage = nil
+        sosTargetCommunityID = nil
+        Task { await syncSOS() }
     }
 
     // MARK: - Actions
@@ -442,22 +496,51 @@ class CommunityViewModel {
         showingCommunitySheet = true
     }
     
-    func leaveCommunity(_ community: Community) {
+    /// Whether I created this community. `true` → removing it deletes the group for everyone
+    /// (CloudKit can't transfer ownership); `false` → I just leave; `nil` → mock/local-only row.
+    /// Drives the swipe-action label ("Delete" vs "Leave").
+    func ownsCommunity(_ community: Community) -> Bool? {
+        cloudCommunities.first { $0.id == community.id }?.isOwned
+    }
+
+    /// Owner deletes the community for everyone; a participant leaves it. The cloud removal must
+    /// succeed before the row goes — a local-only removal would just resurrect on the next poll.
+    func leaveCommunity(_ community: Community) async {
+        if let cloud = cloudCommunities.first(where: { $0.id == community.id }) {
+            do {
+                try await cloudKit.removeCommunity(cloud)
+            } catch {
+                print("❌ [Community] remove failed:", error)
+                return
+            }
+            cloudCommunities.removeAll { $0.id == cloud.id }
+            cloudCommunityIDs.remove(cloud.id)
+        }
         communities.removeAll { $0.id == community.id }
 
         if selectedCommunity?.id == community.id {
-            selectedCommunity = nil
-            selectedMember = nil
-            showingPeopleList = false
-            showingDashboard = false
-            showingMemberProfile = false
-            showingYourProfile = false
-            showingCommunitySheet = true
+            resetNavigationAfterLeaving()
         }
     }
 
-    func leaveAllCommunities() {
-        communities.removeAll()
+    func leaveAllCommunities() async {
+        for cloud in cloudCommunities {
+            do {
+                try await cloudKit.removeCommunity(cloud)
+            } catch {
+                print("❌ [Community] remove failed for \(cloud.name):", error)
+                continue   // keep the row; the poll keeps showing what still exists in the cloud
+            }
+            cloudCommunityIDs.remove(cloud.id)
+            communities.removeAll { $0.id == cloud.id }
+        }
+        cloudCommunities.removeAll { !cloudCommunityIDs.contains($0.id) }
+        // Mock/local rows have no cloud side — drop them outright (pre-existing behavior).
+        communities.removeAll { !cloudCommunityIDs.contains($0.id) }
+        resetNavigationAfterLeaving()
+    }
+
+    private func resetNavigationAfterLeaving() {
         selectedCommunity = nil
         selectedMember = nil
         showingPeopleList = false
@@ -489,7 +572,10 @@ class CommunityViewModel {
             )
         }
 
-        activeSOSMessages[currentUser.id] = trimmedMessage
+        // Set the message + audience locally (instant red pin for me), then push to CloudKit so the
+        // chosen people see it too. `communityID == nil` broadcasts; otherwise just that group.
+        currentUser.sosMessage = trimmedMessage
+        sosTargetCommunityID = communityID
 
         for index in communities.indices {
             if communityID == nil || communities[index].id == communityID {
@@ -504,6 +590,8 @@ class CommunityViewModel {
         showingYourProfile = false
         showingCommunitySheet = false
         showingNotifications = false
+
+        Task { await syncSOS() }
     }
 }
 
@@ -511,14 +599,6 @@ class CommunityViewModel {
 @MainActor
 @Observable
 class SettingsViewModel {
-    // MARK: - Permissions
-    var isFitnessEnabled = true
-    var isHealthEnabled = false
-    var isWeatherEnabled = false
-    
-    // MARK: - Location
-    var isLocationSharingEnabled = true
-    
     // MARK: - Privacy
     var privacyLevel: PrivacyLevel = .everyone
     var showingPrivacyMenu = false

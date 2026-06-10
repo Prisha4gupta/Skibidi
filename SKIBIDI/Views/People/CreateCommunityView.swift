@@ -1,15 +1,18 @@
 import SwiftUI
+import PhotosUI
 struct CreateCommunityView: View {
     @Bindable var viewModel: CommunityViewModel
     @Environment(\.dismiss) private var dismiss
 
     @State private var communityName = ""
-    @State private var communityType: CommunityType = .detail
-    @State private var dateActive = Date()
     /// Set when the community is created — presents the system invite sheet so the flow goes
     /// straight from "Create" into sharing the link.
     @State private var shareData: ShareSheetData?
     @State private var isCreating = false
+
+    @State private var photoItem: PhotosPickerItem?
+    /// Compressed JPEG of the chosen avatar — stored on the community so every member sees it.
+    @State private var imageData: Data?
 
     private var canCreate: Bool {
         !communityName.trimmingCharacters(in: .whitespaces).isEmpty && !isCreating
@@ -29,15 +32,6 @@ struct CreateCommunityView: View {
                             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                     }
 
-                    Button {
-                    } label: {
-                        Text("Add Participants")
-                            .font(.subheadline.weight(.medium))
-                            .foregroundStyle(.blue)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-
-                    extensionsSection
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 8)
@@ -62,7 +56,7 @@ struct CreateCommunityView: View {
                     Button {
                         Task {
                             isCreating = true
-                            shareData = await viewModel.createCommunity(name: communityName)
+                            shareData = await viewModel.createCommunity(name: communityName, imageData: imageData)
                             isCreating = false
                             // Success → the invite sheet shows (and dismisses us afterwards).
                             // Failure (no iCloud etc., already logged) → just close.
@@ -96,49 +90,52 @@ struct CreateCommunityView: View {
 
     private var imageUploadArea: some View {
         VStack(spacing: 8) {
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color(.systemGray6))
-                .frame(height: 140)
-                .overlay {
-                    VStack(spacing: 8) {
-                        Image(systemName: "photo")
-                            .font(.system(size: 32))
-                            .foregroundStyle(.tertiaryText)
+            PhotosPicker(selection: $photoItem, matching: .images) {
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(Color(.systemGray6))
+                    .frame(height: 140)
+                    .overlay {
+                        if let imageData, let uiImage = UIImage(data: imageData) {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .scaledToFill()
+                        } else {
+                            Image(systemName: "photo")
+                                .font(.system(size: 32))
+                                .foregroundStyle(.tertiaryText)
+                        }
                     }
-                }
-
-            Button("Add photo") {
+                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             }
-            .font(.subheadline.weight(.medium))
-            .foregroundStyle(.blue)
+
+            PhotosPicker(selection: $photoItem, matching: .images) {
+                Text("Add photo")
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(.blue)
+            }
+        }
+        .onChange(of: photoItem) { _, newItem in
+            Task {
+                guard let newItem,
+                      let data = try? await newItem.loadTransferable(type: Data.self),
+                      let uiImage = UIImage(data: data) else { return }
+                imageData = Self.downscaledJPEG(uiImage)
+            }
         }
     }
 
-    private var extensionsSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                Text("Type of community")
-                    .font(.body)
-                Spacer()
-                Picker("", selection: $communityType) {
-                    ForEach(CommunityType.allCases, id: \.self) { type in
-                        Text(type.rawValue).tag(type)
-                    }
-                }
-                .pickerStyle(.menu)
-                .tint(.secondary)
-            }
+    /// Community avatars don't need full-resolution source images, and CloudKit records
+    /// shouldn't carry megabytes — clamp to ~512px and JPEG-compress before upload.
+    private static func downscaledJPEG(_ image: UIImage, maxDimension: CGFloat = 512, quality: CGFloat = 0.7) -> Data? {
+        let longest = max(image.size.width, image.size.height)
+        let scale = longest > maxDimension ? maxDimension / longest : 1
+        let targetSize = CGSize(width: image.size.width * scale, height: image.size.height * scale)
 
-            Divider()
-            HStack {
-                Text("Date Active")
-                    .font(.body)
-                Spacer()
-                DatePicker("", selection: $dateActive, displayedComponents: .date)
-                    .labelsHidden()
-                    .tint(.secondary)
-            }
+        let renderer = UIGraphicsImageRenderer(size: targetSize)
+        let resized = renderer.image { _ in
+            image.draw(in: CGRect(origin: .zero, size: targetSize))
         }
+        return resized.jpegData(compressionQuality: quality)
     }
 }
 
