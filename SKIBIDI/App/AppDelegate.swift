@@ -46,6 +46,11 @@ final class SceneDelegate: NSObject, UIWindowSceneDelegate {
             switch result {
             case .success:
                 print("✅ [Share] accepted — community zone is now in your Shared DB.")
+                // Tell the ViewModel right away so it writes my record into the new zone and
+                // refreshes — joining feels instant instead of waiting for the ~12s poll.
+                DispatchQueue.main.async {
+                    NotificationCenter.default.post(name: .cloudKitShareAccepted, object: nil)
+                }
             case .failure(let error):
                 print("❌ [Share] accept failed:", error)
             }
@@ -58,4 +63,10 @@ final class SceneDelegate: NSObject, UIWindowSceneDelegate {
 
         container.add(operation)
     }
+}
+
+extension Notification.Name {
+    /// Posted by `SceneDelegate` once a share invite is accepted, so `CommunityViewModel` can
+    /// sync my record into the just-joined zone and refresh immediately.
+    static let cloudKitShareAccepted = Notification.Name("cloudKitShareAccepted")
 }

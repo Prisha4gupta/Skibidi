@@ -79,6 +79,18 @@ class CommunityViewModel {
         locationManager.onLocationUpdate = { [weak self] coord in
             self?.handleLocationUpdate(coord)
         }
+
+        // A just-accepted share invite: write my record into the new zone and refresh right
+        // away, so joining feels instant instead of waiting for the next ~12s poll tick.
+        NotificationCenter.default.addObserver(
+            forName: .cloudKitShareAccepted, object: nil, queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                guard let self else { return }
+                await self.cloudKit.syncMyData(self.currentUser)
+                await self.refreshCloudCommunities()
+            }
+        }
     }
 
     /// Fold a locally-saved onboarding profile onto a `User` (name + emoji + Apple identity).
@@ -153,16 +165,14 @@ class CommunityViewModel {
     func refreshCloudCommunities() async {
         do {
             var fetched = try await cloudKit.fetchCommunities()
-            // My record comes back flagged `isCurrentUser` (stable record name). Fall back to
-            // `appleUserID` — the stable Sign in with Apple identity — for records the
-            // record-name match missed.
-            if let myAppleID = currentUser.appleUserID, !myAppleID.isEmpty {
-                for i in fetched.indices
-                where !fetched[i].members.contains(where: { $0.isCurrentUser }) {
-                    if let j = fetched[i].members.firstIndex(where: { $0.appleUserID == myAppleID }) {
-                        fetched[i].members[j].isCurrentUser = true
-                    }
-                }
+            markMyRecords(in: &fetched)
+            // Self-heal: a community without my record means I just joined it (accepted a share)
+            // or an earlier sync failed — write my record now and re-fetch, so I show up without
+            // waiting for a relaunch. Idempotent; at worst it retries on the next poll tick.
+            if fetched.contains(where: { c in !c.members.contains(where: { $0.isCurrentUser }) }) {
+                await cloudKit.syncMyData(currentUser)
+                fetched = try await cloudKit.fetchCommunities()
+                markMyRecords(in: &fetched)
             }
             cloudCommunities = fetched
             // Cross-device name: if I never set a name on THIS device, adopt the one stored in
@@ -178,6 +188,19 @@ class CommunityViewModel {
             rebuildCloudCommunityRows()
         } catch {
             print("❌ [CloudKit] fetch communities failed:", error)
+        }
+    }
+
+    /// Flag my own record in each community. It comes back flagged `isCurrentUser` already
+    /// (stable record name); fall back to `appleUserID` — the stable Sign in with Apple
+    /// identity — for records the record-name match missed.
+    private func markMyRecords(in fetched: inout [CloudKitService.CloudCommunity]) {
+        guard let myAppleID = currentUser.appleUserID, !myAppleID.isEmpty else { return }
+        for i in fetched.indices
+        where !fetched[i].members.contains(where: { $0.isCurrentUser }) {
+            if let j = fetched[i].members.firstIndex(where: { $0.appleUserID == myAppleID }) {
+                fetched[i].members[j].isCurrentUser = true
+            }
         }
     }
 
