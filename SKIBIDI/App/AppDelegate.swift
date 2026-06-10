@@ -10,6 +10,34 @@ import CloudKit
 /// Requires `CKSharingSupported = YES` in Info.plist so the system offers this app for the link.
 final class AppDelegate: NSObject, UIApplicationDelegate {
     func application(_ application: UIApplication,
+                     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
+        // CloudKit change subscriptions deliver via silent push, which needs a device token
+        // but no user-facing permission prompt — safe to register unconditionally.
+        application.registerForRemoteNotifications()
+        return true
+    }
+
+    func application(_ application: UIApplication,
+                     didFailToRegisterForRemoteNotificationsWithError error: Error) {
+        print("❌ [Push] remote-notification registration failed:", error.localizedDescription)
+    }
+
+    /// A CloudKit database subscription fired: something changed server-side. Hand it to the
+    /// ViewModel as "refresh now" — the snapshot diff there works out what actually happened.
+    func application(_ application: UIApplication,
+                     didReceiveRemoteNotification userInfo: [AnyHashable: Any],
+                     fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+        // UIKit hands the payload over as [AnyHashable: Any]; CKNotification wants [String: Any].
+        guard let payload = userInfo as? [String: Any],
+              CKNotification(fromRemoteNotificationDictionary: payload) != nil else {
+            completionHandler(.noData)
+            return
+        }
+        NotificationCenter.default.post(name: .cloudKitDataChanged, object: nil)
+        completionHandler(.newData)
+    }
+
+    func application(_ application: UIApplication,
                      configurationForConnecting connectingSceneSession: UISceneSession,
                      options: UIScene.ConnectionOptions) -> UISceneConfiguration {
         let config = UISceneConfiguration(name: nil, sessionRole: connectingSceneSession.role)
@@ -69,4 +97,8 @@ extension Notification.Name {
     /// Posted by `SceneDelegate` once a share invite is accepted, so `CommunityViewModel` can
     /// sync my record into the just-joined zone and refresh immediately.
     static let cloudKitShareAccepted = Notification.Name("cloudKitShareAccepted")
+
+    /// Posted when a CloudKit silent push reports server-side changes, so `CommunityViewModel`
+    /// refreshes right away instead of waiting for the next poll tick.
+    static let cloudKitDataChanged = Notification.Name("cloudKitDataChanged")
 }

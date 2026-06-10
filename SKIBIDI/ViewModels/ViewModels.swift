@@ -1,5 +1,6 @@
 import SwiftUI
 import MapKit
+import UserNotifications
 
 /// Manages community data, member selection, and navigation state for the People tab.
 @MainActor
@@ -24,8 +25,8 @@ class CommunityViewModel {
     @ObservationIgnored private let locationManager = LocationManager()
     @ObservationIgnored private let healthService = HealthKitService()
     @ObservationIgnored private let cloudKit = CloudKitService()
-    /// Polls the cloud group while the app is open so other members' updates appear ~live without
-    /// requiring push notifications (which would need aps-environment, at odds with TestFlight).
+    /// Polls the cloud group while the app is open so other members' updates appear ~live even
+    /// when a CloudKit change push doesn't arrive (silent pushes are best-effort).
     @ObservationIgnored private var liveRefreshTask: Task<Void, Never>?
     /// Once the user has manually moved the map (or picked a community) we stop auto-recentering
     /// on each new location fix, so we don't fight the user's panning.
@@ -77,7 +78,7 @@ class CommunityViewModel {
 
     init() {
         self.communities = []
-        self.notifications = []
+        self.notifications = Self.loadPersistedNotifications()
         // Restore the display name the user set previously, on a local copy *before* assigning —
         // mutating the @Observable `currentUser` setter touches all of `self`, which isn't fully
         // initialized yet. CloudKit can't hand out the iCloud name, so the user owns it (see
@@ -118,6 +119,16 @@ class CommunityViewModel {
                 guard let self else { return }
                 await self.cloudKit.syncMyData(self.currentUser, sosCommunityIDs: self.currentSOSTargets)
                 await self.refreshCloudCommunities()
+            }
+        }
+
+        // A CloudKit silent push said something changed server-side — refresh right away
+        // instead of waiting for the next poll tick.
+        NotificationCenter.default.addObserver(
+            forName: .cloudKitDataChanged, object: nil, queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                await self?.refreshCloudCommunities()
             }
         }
     }
@@ -187,6 +198,9 @@ class CommunityViewModel {
                     Task { await self?.loadCurrentUserHealth() }
                 }
             }
+            // Install CloudKit change subscriptions (idempotent) so the server pings us when
+            // a community zone changes — refreshes then happen push-driven, the poll is backup.
+            await cloudKit.ensureSubscriptions()
             startLiveRefresh()
         }
     }
@@ -229,6 +243,7 @@ class CommunityViewModel {
                 fetched = try await cloudKit.fetchCommunities()
                 markMyRecords(in: &fetched)
             }
+            emitChangeNotifications(from: cloudCommunities, to: fetched)
             cloudCommunities = fetched
             // Cross-device name: if I never set a name on THIS device, adopt the one stored in
             // my cloud record (set from another device). A locally-set name always wins.
@@ -277,7 +292,8 @@ class CommunityViewModel {
                 isLocationSharing: true,
                 isHealthSharing: true,
                 isFitnessSharing: true,
-                hasNotification: false,
+                // Rebuilds wipe row state, so the badge is derived from the feed each time.
+                hasNotification: notifications.contains { !$0.isRead && $0.communityName == cloud.name },
                 notificationMessage: nil
             )
         }
@@ -285,6 +301,154 @@ class CommunityViewModel {
         if let selected = selectedCommunity, cloudCommunityIDs.contains(selected.id) {
             selectedCommunity = communities.first { $0.id == selected.id }
         }
+    }
+
+    // MARK: - Notification feed
+
+    private static let notificationsKey = "notificationFeed"
+    /// Whether we already hold a first cloud snapshot. The first fetch after launch is the
+    /// baseline — diffing it against the empty pre-launch state would announce every existing
+    /// member as "just joined".
+    @ObservationIgnored private var hasBaselineSnapshot = false
+
+    /// Turn the difference between two consecutive cloud snapshots into feed entries:
+    /// member joins/leaves, incoming SOS, invites I accepted, and teams that disappeared.
+    private func emitChangeNotifications(from old: [CloudKitService.CloudCommunity],
+                                         to new: [CloudKitService.CloudCommunity]) {
+        guard hasBaselineSnapshot else {
+            hasBaselineSnapshot = true
+            // An SOS already active before launch must still surface — missing one is worse
+            // than an occasional repeat (the duplicate check in emitSOSNotifications filters those).
+            for community in new {
+                emitSOSNotifications(previous: [:], current: community)
+            }
+            return
+        }
+
+        let oldByID = Dictionary(uniqueKeysWithValues: old.map { ($0.id, $0) })
+        var seen = Set<UUID>()
+
+        for community in new {
+            seen.insert(community.id)
+            guard let previous = oldByID[community.id] else {
+                // A community appearing mid-session that I didn't create = an accepted invite.
+                if !community.isOwned {
+                    pushNotification(community: community, emoji: "👥",
+                                     message: "You joined \"\(community.name)\"")
+                }
+                emitSOSNotifications(previous: [:], current: community)
+                continue
+            }
+
+            let oldMembers = Self.membersByIdentity(previous.members)
+            let newMembers = Self.membersByIdentity(community.members)
+
+            for (key, member) in newMembers where oldMembers[key] == nil && !member.isCurrentUser {
+                pushNotification(community: community, emoji: "👥",
+                                 message: "\(member.name) joined")
+            }
+            for (key, member) in oldMembers where newMembers[key] == nil && !member.isCurrentUser {
+                pushNotification(community: community, emoji: "👥",
+                                 message: "\(member.name) left")
+            }
+            emitSOSNotifications(previous: oldMembers, current: community)
+        }
+
+        // Gone without me leaving locally → the owner deleted it (or my access was revoked).
+        // Trustworthy because fetch failures now abort the refresh instead of returning [].
+        for community in old where !seen.contains(community.id) && !community.isOwned {
+            pushNotification(community: community, emoji: "👥",
+                             message: "\"\(community.name)\" is no longer available")
+        }
+    }
+
+    /// Notify SOS messages that are new (or changed) since the previous snapshot, skipping my
+    /// own and entries already in the feed (guards baseline repeats across relaunches).
+    private func emitSOSNotifications(previous: [String: User],
+                                      current community: CloudKitService.CloudCommunity) {
+        for member in community.members where !member.isCurrentUser {
+            guard let sos = member.sosMessage,
+                  previous[Self.identity(of: member)]?.sosMessage != sos else { continue }
+            let message = "SOS from \(member.name): \(sos)"
+            guard !notifications.contains(where: {
+                $0.message == message && $0.communityName == community.name
+            }) else { continue }
+            pushNotification(community: community, emoji: "🚨", message: message)
+            postSOSBanner(from: member.name, sos: sos, teamName: community.name)
+        }
+    }
+
+    /// Lock-screen banner for an incoming SOS — the one event urgent enough to surface
+    /// outside the app (joins/leaves stay in-app only). iOS suppresses it while the app is
+    /// foregrounded (the red pin + feed already show it there), and it's a silent no-op if
+    /// the user never granted notification permission in onboarding.
+    private func postSOSBanner(from memberName: String, sos: String, teamName: String) {
+        let content = UNMutableNotificationContent()
+        content.title = "🚨 SOS from \(memberName)"
+        content.body = "\(sos) — \(teamName)"
+        content.sound = .default
+        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil)
+        UNUserNotificationCenter.current().add(request)
+    }
+
+    /// Stable cross-poll identity for a member. The record's `userUUID` changes when that
+    /// member relaunches their app, so prefer the durable Apple identity, then the name.
+    private static func identity(of member: User) -> String {
+        if let appleID = member.appleUserID, !appleID.isEmpty { return appleID }
+        return member.name
+    }
+
+    private static func membersByIdentity(_ members: [User]) -> [String: User] {
+        var result: [String: User] = [:]
+        for member in members { result[identity(of: member)] = member }
+        return result
+    }
+
+    /// Insert a feed entry and persist. The community-row badge is derived from unread entries
+    /// during `rebuildCloudCommunityRows`, which runs right after the diff.
+    private func pushNotification(community: CloudKitService.CloudCommunity, emoji: String, message: String) {
+        notifications.insert(
+            AppNotification(
+                id: UUID(),
+                communityName: community.name,
+                communityEmoji: emoji,
+                message: message,
+                timestamp: Date(),
+                isRead: false
+            ),
+            at: 0
+        )
+        persistNotifications()
+    }
+
+    /// Flip everything to read — called when the notification sheet closes, so the bell dot
+    /// and row badges go dark until something new happens.
+    func markNotificationsRead() {
+        guard notifications.contains(where: { !$0.isRead }) else { return }
+        for index in notifications.indices {
+            notifications[index].isRead = true
+        }
+        for index in communities.indices {
+            communities[index].hasNotification = false
+        }
+        persistNotifications()
+    }
+
+    /// The feed survives relaunches via UserDefaults — newest first, capped so it can't grow
+    /// unbounded.
+    private func persistNotifications() {
+        if notifications.count > 50 {
+            notifications.removeLast(notifications.count - 50)
+        }
+        if let data = try? JSONEncoder().encode(notifications) {
+            UserDefaults.standard.set(data, forKey: Self.notificationsKey)
+        }
+    }
+
+    private static func loadPersistedNotifications() -> [AppNotification] {
+        guard let data = UserDefaults.standard.data(forKey: Self.notificationsKey),
+              let saved = try? JSONDecoder().decode([AppNotification].self, from: data) else { return [] }
+        return saved
     }
 
     // MARK: - Identity
@@ -633,6 +797,7 @@ class CommunityViewModel {
                 at: 0
             )
         }
+        persistNotifications()
 
         // Set the message + audience locally (instant red pin for me), then push to CloudKit so the
         // chosen people see it too. `communityID == nil` broadcasts; otherwise just that group.
