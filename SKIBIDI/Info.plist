@@ -27,9 +27,9 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSHealthShareUsageDescription</key>
-	<string>SKIBIDI reads your health data to share wellness metrics with your travel community.</string>
+	<string>Tìm reads your health data to share wellness metrics with your travel community.</string>
 	<key>NSHealthUpdateUsageDescription</key>
-	<string>SKIBIDI writes health data to track your wellness activities.</string>
+	<string>Tìm writes health data to track your wellness activities.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>SKIBIDI keeps your community updated on your whereabouts while you're moving.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>

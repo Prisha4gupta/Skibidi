@@ -249,7 +249,7 @@ struct EmergencySOSView: View {
     private var targetTitle: String {
         guard let selectedCommunityID,
               let community = viewModel.communities.first(where: { $0.id == selectedCommunityID }) else {
-            return "All groups & people"
+            return "All teams & people"
         }
 
         return community.name
@@ -301,7 +301,7 @@ struct EmergencySOSView: View {
                         .font(.title2.bold())
                     
 
-                    Text("Send an urgent message to a group or everyone.")
+                    Text("Send an urgent message to a team or everyone.")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -315,7 +315,7 @@ struct EmergencySOSView: View {
                         Button {
                             selectedCommunityID = nil
                         } label: {
-                            Label("All groups & people", systemImage: selectedCommunityID == nil ? "checkmark" : "person.3.fill")
+                            Label("All teams & people", systemImage: selectedCommunityID == nil ? "checkmark" : "person.3.fill")
                         }
 
                         ForEach(viewModel.communities) { community in
