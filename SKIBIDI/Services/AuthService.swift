@@ -25,7 +25,7 @@ enum AuthError: LocalizedError {
     }
 }
 
-/// Sign-in contract the onboarding flow depends on. Mirrors the `DataService` DI shape:
+/// Sign-in contract the onboarding flow depends on. Follows the project DI shape:
 /// a `@MainActor protocol` with a real conformer (`AppleAuthService`) for devices and a
 /// `MockAuthService` for previews/simulator — the ViewModel only ever talks to this protocol.
 ///

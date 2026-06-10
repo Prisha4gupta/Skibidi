@@ -3,7 +3,6 @@ import MapKit
 
 struct PeopleMapView: View {
     @Bindable var viewModel: CommunityViewModel
-    @State private var settingsVM = SettingsViewModel()
     @State private var showingSettings = false
     
     var body: some View {
@@ -117,7 +116,7 @@ struct PeopleMapView: View {
         }
         .sheet(isPresented: $showingSettings) {
             NavigationStack {
-                SettingsView(settingsVM: settingsVM, communityVM: viewModel)
+                SettingsView(communityVM: viewModel)
                     .navigationTitle("Settings")
                     .navigationBarTitleDisplayMode(.inline)
                     .toolbar {
@@ -237,6 +236,7 @@ struct EmergencySOSView: View {
 
     @State private var selectedCommunityID: UUID?
     @State private var message = ""
+    @FocusState private var messageFocused: Bool
 
     private var trimmedMessage: String {
         message.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -257,7 +257,45 @@ struct EmergencySOSView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(alignment: .leading, spacing: 18) {
+            ScrollView {
+                formContent
+                    .padding(20)
+            }
+            // The Send button lives in the bottom safe-area inset, so the keyboard pushes it
+            // up instead of covering it — it stays tappable while typing. Scrolling or tapping
+            // anywhere outside the editor also drops the keyboard (TextEditor has no
+            // return-to-dismiss, and the keyboard toolbar doesn't reliably render inside a
+            // detented sheet).
+            .scrollDismissesKeyboard(.immediately)
+            .contentShape(Rectangle())
+            .onTapGesture { messageFocused = false }
+            .safeAreaInset(edge: .bottom) {
+                sendButton
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 12)
+                    .background(.regularMaterial)
+            }
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(.secondary)
+                            .frame(width: 30, height: 30)
+                            .background(Color(.systemGray5))
+                            .clipShape(Circle())
+                    }
+                }
+            }
+        }
+        .presentationDetents([.large])
+        .presentationDragIndicator(.visible)
+    }
+
+    private var formContent: some View {
+        VStack(alignment: .leading, spacing: 18) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Emergency SOS")
                         .font(.title2.bold())
@@ -328,6 +366,7 @@ struct EmergencySOSView: View {
                             .background(Color(.systemGray6))
                             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                             .textInputAutocapitalization(.sentences)
+                            .focused($messageFocused)
 
                         if message.isEmpty {
                             Text("Example: I have been robbed, I am not feeling well, I need help.")
@@ -341,41 +380,23 @@ struct EmergencySOSView: View {
                 }
 
                 quickMessages
-
-                Spacer(minLength: 0)
-
-                Button {
-                    viewModel.sendEmergencySOS(message: message, communityID: selectedCommunityID)
-                    dismiss()
-                } label: {
-                    Label("Send SOS", systemImage: "paperplane.fill")
-                        .font(.headline)
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                        .background(canSend ? Color.energyCritical : Color(.systemGray4))
-                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                }
-                .disabled(!canSend)
-            }
-            .padding(20)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(.secondary)
-                            .frame(width: 30, height: 30)
-                            .background(Color(.systemGray5))
-                            .clipShape(Circle())
-                    }
-                }
-            }
         }
-        .presentationDetents([.large])
-        .presentationDragIndicator(.visible)
+    }
+
+    private var sendButton: some View {
+        Button {
+            viewModel.sendEmergencySOS(message: message, communityID: selectedCommunityID)
+            dismiss()
+        } label: {
+            Label("Send SOS", systemImage: "paperplane.fill")
+                .font(.headline)
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+                .background(canSend ? Color.energyCritical : Color(.systemGray4))
+                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        }
+        .disabled(!canSend)
     }
 
     private var quickMessages: some View {
@@ -396,6 +417,7 @@ struct EmergencySOSView: View {
     private func quickMessageButton(_ text: String) -> some View {
         Button {
             message = text
+            messageFocused = false
         } label: {
             Text(text)
                 .font(.caption.weight(.medium))

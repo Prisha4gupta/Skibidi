@@ -1,24 +1,17 @@
 import SwiftUI
-import MapKit
 
 struct SettingsView: View {
-    @Bindable var settingsVM: SettingsViewModel
     @Bindable var communityVM: CommunityViewModel
-    
+
+    /// Swiping past the threshold only *requests* removal; nothing happens until the user
+    /// confirms in the alert this drives.
+    @State private var communityToRemove: Community?
+    /// Transient top banner ("You left …") shown once a removal finishes.
+    @State private var toastMessage: String?
+
     var body: some View {
         ScrollView {
             VStack(spacing: 0) {
-                // Mini map preview
-                Map {
-                    UserAnnotation()
-                }
-                .mapStyle(.standard)
-                .frame(height: 200)
-                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
-                .allowsHitTesting(false)
-                
                 VStack(spacing: 24) {
                     sectionCard {
                         VStack(alignment: .leading, spacing: 0) {
@@ -36,12 +29,12 @@ struct SettingsView: View {
                             }
                             .padding(.bottom, 12)
                             
-                            Text("The app will read data from the following apps on your iPhone.")
+                            Text("Choose what the app reads and shares with your teams.")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                                 .padding(.bottom, 12)
-                            
-                            
+
+
                             settingsToggle(
                                 title: "Fitness",
                                 isOn: Binding(
@@ -49,10 +42,10 @@ struct SettingsView: View {
                                     set: { communityVM.setFitnessSharing($0) }
                                 )
                             )
-                            
+
                             Divider().padding(.vertical, 8)
-                            
-                           
+
+
                             settingsToggle(
                                 title: "Health",
                                 isOn: Binding(
@@ -60,20 +53,9 @@ struct SettingsView: View {
                                     set: { communityVM.setHealthSharing($0) }
                                 )
                             )
-                        }
-                    }
-                    
-                    sectionCard {
-                        VStack(alignment: .leading, spacing: 0) {
-                            HStack {
-                                Image(systemName: "location.fill")
-                                    .font(.body)
-                                    .foregroundStyle(.blue)
-                                Text("My Location")
-                                    .font(.subheadline.weight(.medium))
-                            }
-                            .padding(.bottom, 12)
-                            
+
+                            Divider().padding(.vertical, 8)
+
                             settingsToggle(
                                 title: "Share My Location",
                                 isOn: Binding(
@@ -83,60 +65,15 @@ struct SettingsView: View {
                             )
                         }
                     }
-                    
 
                     sectionCard {
                         VStack(alignment: .leading, spacing: 0) {
-                            HStack {
-                                Text("Communities")
-                                    .font(.headline)
-                                
-                                Spacer()
-                                
-                                Image(systemName: "plus")
-                                    .font(.system(size: 14, weight: .semibold))
-                                    .foregroundStyle(.secondary)
-                                    .frame(width: 28, height: 28)
-                                    .background(Color(.systemGray5))
-                                    .clipShape(Circle())
-                            }
-                            .padding(.bottom, 12)
-                            
-                            HStack(spacing: 12) {
-                                ZStack {
-                                    Circle()
-                                        .fill(Color(.systemGray5))
-                                        .frame(width: 36, height: 36)
-                                    Image(systemName: "bell.fill")
-                                        .font(.caption)
-                                        .foregroundStyle(.primary)
-                                }
-                                
-                                VStack(alignment: .leading, spacing: 1) {
-                                    Text("Notification")
-                                        .font(.subheadline.weight(.medium))
-                                    Text("You have a new notification")
-                                        .font(.caption2)
-                                        .foregroundStyle(.secondary)
-                                }
-                                
-                                Spacer()
-                                
-                                HStack(spacing: 4) {
-                                    Text("View")
-                                        .font(.caption2)
-                                        .foregroundStyle(.secondary)
-                                    Image(systemName: "chevron.right")
-                                        .font(.caption2)
-                                        .foregroundStyle(.tertiaryText)
-                                }
-                            }
-                            .padding(.vertical, 6)
-                            
-                            Divider().padding(.vertical, 6)
-                            
+                            Text("Teams")
+                                .font(.headline)
+                                .padding(.bottom, 12)
+
                             if communityVM.communities.isEmpty {
-                                Text("No communities")
+                                Text("No teams")
                                     .font(.subheadline)
                                     .foregroundStyle(.secondary)
                                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -149,7 +86,7 @@ struct SettingsView: View {
                                         // just leaves — make the swipe action say which.
                                         actionLabel: communityVM.ownsCommunity(community) == false ? "Leave" : "Delete"
                                     ) {
-                                        Task { await communityVM.leaveCommunity(community) }
+                                        communityToRemove = community
                                     }
 
                                     if community.id != communityVM.communities.last?.id {
@@ -160,37 +97,69 @@ struct SettingsView: View {
                         }
                     }
 
-                    sectionCard {
-                        Button {
-                            settingsVM.confirmLeaveAllCommunities()
-                        } label: {
-                            HStack {
-                                Text("Leave All Communities")
-                                    .font(.body.weight(.medium))
-                                    .foregroundStyle(.red)
-                                Spacer()
-                            }
-                        }
-                        .disabled(communityVM.communities.isEmpty)
-                    }
-                    
-        
                 }
                 .padding(.top, 20)
                 .padding(.bottom, 120)
             }
         }
         .background(Color(.systemGroupedBackground))
-        .alert("Leave All Communities", isPresented: $settingsVM.showingLeaveCommunity) {
-            Button("Cancel", role: .cancel) {
-                settingsVM.showingLeaveCommunity = false
+        .alert(
+            communityToRemove.map(removalTitle) ?? "",
+            isPresented: Binding(
+                get: { communityToRemove != nil },
+                set: { if !$0 { communityToRemove = nil } }
+            ),
+            presenting: communityToRemove
+        ) { community in
+            Button("Cancel", role: .cancel) {}
+            Button(actionLabel(for: community), role: .destructive) {
+                Task { await remove(community) }
             }
-            Button("Leave", role: .destructive) {
-                Task { await communityVM.leaveAllCommunities() }
-                settingsVM.showingLeaveCommunity = false
+        } message: { community in
+            Text(ownsTeam(community)
+                 ? "This will delete \"\(community.name)\" for everyone in it. This action cannot be undone."
+                 : "You'll leave \"\(community.name)\". You can rejoin later with an invite link.")
+        }
+        .overlay(alignment: .top) {
+            if let toastMessage {
+                Text(toastMessage)
+                    .font(.subheadline.weight(.semibold))
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(.regularMaterial, in: Capsule())
+                    .shadow(color: .black.opacity(0.12), radius: 8, y: 2)
+                    .padding(.top, 8)
+                    .transition(.move(edge: .top).combined(with: .opacity))
             }
-        } message: {
-            Text("Communities you own will be deleted for everyone in them; the rest you'll just leave. This action cannot be undone.")
+        }
+    }
+
+    private func ownsTeam(_ community: Community) -> Bool {
+        communityVM.ownsCommunity(community) ?? true
+    }
+
+    private func actionLabel(for community: Community) -> String {
+        ownsTeam(community) ? "Delete" : "Leave"
+    }
+
+    private func removalTitle(_ community: Community) -> String {
+        ownsTeam(community) ? "Delete Team" : "Leave Team"
+    }
+
+    /// Run the confirmed removal and report the outcome via a short top banner.
+    private func remove(_ community: Community) async {
+        let owned = ownsTeam(community)
+        let success = await communityVM.leaveCommunity(community)
+        let text: String
+        if success {
+            text = owned ? "\"\(community.name)\" deleted" : "You left \"\(community.name)\""
+        } else {
+            text = "Couldn't \(owned ? "delete" : "leave") \"\(community.name)\" — try again"
+        }
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) { toastMessage = text }
+        try? await Task.sleep(for: .seconds(2.2))
+        if toastMessage == text {
+            withAnimation(.easeOut(duration: 0.25)) { toastMessage = nil }
         }
     }
 
@@ -249,18 +218,14 @@ struct SwipeToDeleteCommunityRow: View {
                             dragOffset = max(value.translation.width, 0)
                         }
                         .onEnded { value in
+                            // The row always springs back: passing the threshold only asks the
+                            // caller for confirmation — the row actually disappears via the data
+                            // change once the user confirms and the removal succeeds.
+                            withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) {
+                                dragOffset = 0
+                            }
                             if value.translation.width > deleteThreshold {
-                                withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) {
-                                    dragOffset = 420
-                                }
-
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) {
-                                    onDelete()
-                                }
-                            } else {
-                                withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) {
-                                    dragOffset = 0
-                                }
+                                onDelete()
                             }
                         }
                 )
@@ -271,14 +236,7 @@ struct SwipeToDeleteCommunityRow: View {
 
     private var communityContent: some View {
         HStack(spacing: 12) {
-            ZStack {
-                Circle()
-                    .fill(Color(.systemGray5))
-                    .frame(width: 36, height: 36)
-                Image(systemName: "person.2.fill")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
+            CommunityAvatarView(imageData: community.imageData, size: 36)
 
             Text(community.name)
                 .font(.subheadline.weight(.medium))
@@ -295,5 +253,5 @@ struct SwipeToDeleteCommunityRow: View {
 }
 
 #Preview {
-    SettingsView(settingsVM: SettingsViewModel(), communityVM: CommunityViewModel())
+    SettingsView(communityVM: CommunityViewModel())
 }

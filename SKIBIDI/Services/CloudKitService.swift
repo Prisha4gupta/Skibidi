@@ -1,10 +1,7 @@
 import CloudKit
 
-/// Writes the device owner's own data to their private iCloud database and reads it back.
-///
-/// This is the **write path** (my data → cloud). It is deliberately separate from the
-/// `DataService` **read path** (UI → data); the two meet later, in the sharing milestones,
-/// once the cloud actually holds everyone's records.
+/// The app's CloudKit backend: writes the device owner's data into every community zone they
+/// belong to, and reads communities + member records back for the UI (via `CommunityViewModel`).
 ///
 /// Marked `@MainActor` for simplicity: everything here is awaited from the main-actor
 /// ViewModel, and the heavy network work happens off-thread *inside* CloudKit while the
@@ -192,20 +189,28 @@ final class CloudKitService {
             guard let id = Self.communityID(fromZoneName: ref.zoneID.zoneName) else { continue }
             let db = databaseFor(isOwned: ref.isOwned)
 
-            var name = "Community"
+            var name = "Team"
             var createdAt: Date?
             var imageData: Data?
             let infoID = CKRecord.ID(recordName: Self.communityInfoRecordName, zoneID: ref.zoneID)
-            if let info = try? await db.record(for: infoID) {
+            let query = CKQuery(recordType: Self.memberRecordType, predicate: NSPredicate(value: true))
+
+            // The info fetch and the member query are independent round-trips — run them
+            // concurrently so each zone costs one network wait instead of two.
+            async let infoFetch = db.record(for: infoID)
+            async let memberFetch = db.records(matching: query, inZoneWith: ref.zoneID)
+
+            if let info = try? await infoFetch {
                 name = info["name"] as? String ?? name
                 createdAt = info["createdAt"] as? Date
                 if let asset = info["image"] as? CKAsset, let url = asset.fileURL {
                     imageData = try? Data(contentsOf: url)
                 }
+            } else {
+                print("❌ [CloudKit] info record unreadable for zone \(ref.zoneID.zoneName) — name/photo will fall back")
             }
 
-            let query = CKQuery(recordType: Self.memberRecordType, predicate: NSPredicate(value: true))
-            let (matches, _) = try await db.records(matching: query, inZoneWith: ref.zoneID)
+            let (matches, _) = try await memberFetch
             let members: [User] = matches.compactMap { _, result in
                 guard case .success(let record) = result, var user = Self.decode(record) else { return nil }
                 if record.recordID.recordName == myName { user.isCurrentUser = true }
@@ -259,14 +264,18 @@ final class CloudKitService {
     /// Throws on failure so the caller keeps the row — otherwise the next poll would resurrect
     /// a community we only pretended to remove.
     func removeCommunity(_ community: CloudCommunity) async throws {
-        if community.isOwned {
-            _ = try await database.modifyRecordZones(saving: [], deleting: [community.zoneID])
-        } else {
-            let db = container.sharedCloudDatabase
+        let db = databaseFor(isOwned: community.isOwned)
+        if !community.isOwned {
             // Best-effort: leaving works without this, but my stale record would linger.
             let myID = CKRecord.ID(recordName: try await myRecordName(), zoneID: community.zoneID)
             _ = try? await db.deleteRecord(withID: myID)
-            _ = try await db.modifyRecordZones(saving: [], deleting: [community.zoneID])
+        }
+        // The async API only throws on whole-operation failures; a per-zone failure comes back
+        // inside `deleteResults`. Surface it, or a failed leave looks like success, the row is
+        // removed locally, and the next fetch self-heals my member record right back in.
+        let result = try await db.modifyRecordZones(saving: [], deleting: [community.zoneID])
+        if case .failure(let error) = result.deleteResults[community.zoneID] {
+            throw error
         }
         print("☁️ [CloudKit] removed community \(community.name) (\(community.isOwned ? "deleted" : "left"))")
     }

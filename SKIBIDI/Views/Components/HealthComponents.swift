@@ -145,7 +145,7 @@ struct WellnessRingCard: View {
                     }
                     .staleStyle(user.healthSharing.isStale)
                 } else {
-                    unavailableSummary(title: "Health hidden", subtitle: "Energy and steps not shared")
+                    unavailableSummary(title: "Not shared", subtitle: "This member hasn't enabled health sharing")
                 }
             }
         }

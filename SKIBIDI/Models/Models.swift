@@ -127,6 +127,14 @@ struct Community: Identifiable {
 
 // MARK: - Health Snapshot
 struct HealthSnapshot: Hashable {
+    /// Pre-HealthKit placeholder: every metric zero, but ring goals at Apple's defaults —
+    /// HealthKit supplies no goals, so zeroed goals would pin ring progress at 0 forever.
+    static let empty = HealthSnapshot(
+        steps: 0, stepsDistanceKm: 0, sleepHours: 0, restingHeartRate: 0, hydrationPercent: 0,
+        moveCalories: 0, moveGoal: 500, exerciseMinutes: 0, exerciseGoal: 30,
+        standHours: 0, standGoal: 12, activeCalories: 0
+    )
+
     var steps: Int
     var stepsDistanceKm: Double
     var sleepHours: Double

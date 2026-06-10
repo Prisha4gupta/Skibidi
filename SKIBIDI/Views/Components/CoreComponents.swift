@@ -113,22 +113,41 @@ struct MemberRowView: View {
     
 }
 
+/// Round team avatar: the uploaded photo when the team has one, otherwise the generic
+/// person-group glyph on gray.
+struct CommunityAvatarView: View {
+    let imageData: Data?
+    var size: CGFloat = 42
+
+    var body: some View {
+        ZStack {
+            if let imageData, let uiImage = UIImage(data: imageData) {
+                Image(uiImage: uiImage)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: size, height: size)
+                    .clipShape(Circle())
+            } else {
+                Circle()
+                    .fill(Color(.systemGray5))
+                    .frame(width: size, height: size)
+
+                Image(systemName: "person.2.fill")
+                    .font(.system(size: size * 0.38))
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+}
+
 struct CommunityRowView: View {
     let community: Community
     var showChevron: Bool = false
     
     var body: some View {
         HStack(spacing: 14) {
-            ZStack {
-                Circle()
-                    .fill(Color(.systemGray5))
-                    .frame(width: 42, height: 42)
-                
-                Image(systemName: "person.2.fill")
-                    .font(.body)
-                    .foregroundStyle(.secondary)
-            }
-            
+            CommunityAvatarView(imageData: community.imageData, size: 42)
+
             VStack(alignment: .leading, spacing: 2) {
                 Text(community.name)
                     .font(.body.weight(.medium))
