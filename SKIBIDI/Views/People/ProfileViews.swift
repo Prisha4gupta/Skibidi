@@ -7,10 +7,6 @@ struct MemberProfileView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            Capsule()
-                .fill(Color(.systemGray4))
-                .frame(width: 36, height: 5)
-                .padding(.top, 10)
             
             HStack {
                 EmojiAvatarView(
@@ -144,10 +140,6 @@ struct YourProfileView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            Capsule()
-                .fill(Color(.systemGray4))
-                .frame(width: 36, height: 5)
-                .padding(.top, 10)
             
 
             HStack {
@@ -290,7 +282,7 @@ struct YourProfileView: View {
             Button("Save") { viewModel.updateDisplayName(draftName) }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("Shown to others in your communities.")
+            Text("Shown to others in your teams.")
         }
     }
 }
@@ -380,7 +372,17 @@ struct EmergencyBanner: View {
         VStack {
             Spacer()
             MemberProfileView(
-                member: MockDataService.shared.member1,
+                member: User(
+                    id: UUID(),
+                    name: "Member",
+                    emoji: "😍",
+                    isCurrentUser: false,
+                    status: .active,
+                    healthSnapshot: .empty,
+                    latitude: -8.48,
+                    longitude: 115.24,
+                    ringColor: .green
+                ),
                 viewModel: CommunityViewModel()
             )
         }

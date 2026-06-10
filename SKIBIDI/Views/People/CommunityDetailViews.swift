@@ -7,14 +7,10 @@ struct PeopleListView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Capsule()
-                .fill(Color(.systemGray4))
-                .frame(width: 36, height: 5)
-                .padding(.top, 10)
             
 
             HStack {
-                Text(viewModel.selectedCommunity?.name ?? "Communities")
+                Text(viewModel.selectedCommunity?.name ?? "Teams")
                     .font(.title2.bold())
 
                 Spacer()
@@ -99,10 +95,6 @@ struct CommunityDashboardView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Capsule()
-                .fill(Color(.systemGray4))
-                .frame(width: 36, height: 5)
-                .padding(.top, 10)
             
             HStack {
                 Menu {
@@ -200,13 +192,31 @@ struct CommunityDashboardView: View {
     }
 }
 
+/// Empty sample team for previews (real data only exists in CloudKit at runtime).
+private func previewCommunity() -> Community {
+    Community(
+        id: UUID(),
+        name: "Preview Team",
+        type: .detail,
+        imageData: nil,
+        members: [],
+        dateActive: Date(),
+        memberCount: 0,
+        isLocationSharing: true,
+        isHealthSharing: true,
+        isFitnessSharing: true,
+        hasNotification: false,
+        notificationMessage: nil
+    )
+}
+
 #Preview("People List") {
     ZStack {
         Color(.systemGray4).ignoresSafeArea()
         VStack {
             Spacer()
             PeopleListView(
-                community: MockDataService.shared.communities[0],
+                community: previewCommunity(),
                 viewModel: CommunityViewModel()
             )
         }
@@ -219,7 +229,7 @@ struct CommunityDashboardView: View {
         VStack {
             Spacer()
             CommunityDashboardView(
-                community: MockDataService.shared.communities[0],
+                community: previewCommunity(),
                 viewModel: CommunityViewModel()
             )
         }

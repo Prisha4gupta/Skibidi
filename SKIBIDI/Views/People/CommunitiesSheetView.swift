@@ -5,10 +5,6 @@ struct CommunitiesSheetView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            Capsule()
-                .fill(Color(.systemGray4))
-                .frame(width: 36, height: 5)
-                .padding(.top, 10)
             
 
             HStack(spacing: 12) {
@@ -50,7 +46,7 @@ struct CommunitiesSheetView: View {
                         .background(Color(.systemGray5))
                         .clipShape(Circle())
                 }
-                .accessibilityLabel("New community")
+                .accessibilityLabel("New team")
             }
             .padding(.horizontal, 20)
             .padding(.top, 16)
@@ -100,10 +96,6 @@ struct NotificationSheetView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            Capsule()
-                .fill(Color(.systemGray4))
-                .frame(width: 36, height: 5)
-                .padding(.top, 10)
             
             HStack {
                 Text("Notifications")

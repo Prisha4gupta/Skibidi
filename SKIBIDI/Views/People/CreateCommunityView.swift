@@ -25,7 +25,7 @@ struct CreateCommunityView: View {
                     imageUploadArea
 
                     VStack(alignment: .leading, spacing: 8) {
-                        TextField("Community's Name", text: $communityName)
+                        TextField("Team's Name", text: $communityName)
                             .font(.body)
                             .padding(14)
                             .background(Color(.systemGray6))
@@ -38,7 +38,7 @@ struct CreateCommunityView: View {
                 .padding(.bottom, 40)
             }
             .background(Color(.systemGroupedBackground))
-            .navigationTitle("New Community")
+            .navigationTitle("New Team")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
