@@ -175,6 +175,9 @@ struct NotificationSheetView: View {
         )
         .shadow(color: .black.opacity(0.08), radius: 20, x: 0, y: -5)
         .frame(maxHeight: UIScreen.main.bounds.height * 0.50)
+        // Closing the sheet clears the bell dot and row badges — the dots stay visible while
+        // the user is actually reading the list.
+        .onDisappear { viewModel.markNotificationsRead() }
     }
 }
 

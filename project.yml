@@ -48,15 +48,21 @@ targets:
           - UIInterfaceOrientationPortrait
         NSLocationWhenInUseUsageDescription: "SKIBIDI needs your location to show you on the map and share with your travel community."
         NSLocationAlwaysAndWhenInUseUsageDescription: "SKIBIDI keeps your community updated on your whereabouts while you're moving."
-        NSHealthShareUsageDescription: "SKIBIDI reads your health data to share wellness metrics with your travel community."
-        NSHealthUpdateUsageDescription: "SKIBIDI writes health data to track your wellness activities."
+        NSHealthShareUsageDescription: "Tìm reads your health data to share wellness metrics with your travel community."
+        NSHealthUpdateUsageDescription: "Tìm writes health data to track your wellness activities."
+        # Silent CloudKit change pushes (content-available) need the app to be wakeable in
+        # the background; without this they are only delivered while the app is foregrounded.
+        UIBackgroundModes:
+          - remote-notification
     sources:
       - path: SKIBIDI
     entitlements:
       path: SKIBIDI/SKIBIDI.entitlements
       properties:
-        # aps-environment intentionally omitted — we don't use push yet, and a "development"
-        # value breaks App Store/TestFlight distribution signing. Re-add (production) at M5.
+        # M5: CloudKit change subscriptions deliver via silent push. "production" is the value
+        # that survives App Store/TestFlight distribution signing ("development" breaks it);
+        # Xcode rewrites it per-profile for debug installs automatically.
+        aps-environment: production
         # Sign in with Apple. Real auth requires this capability enabled on the App ID (paid
         # Apple Developer account); the Simulator/previews use MockAuthService instead.
         com.apple.developer.applesignin:
@@ -66,7 +72,6 @@ targets:
         com.apple.developer.icloud-services:
           - CloudKit
         com.apple.developer.healthkit: true
-        com.apple.developer.healthkit.access: []
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.bpjsr.tim

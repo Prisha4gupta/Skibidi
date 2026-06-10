@@ -205,7 +205,8 @@ struct HealthSnapshot: Hashable {
 }
 
 // MARK: - App Notification
-struct AppNotification: Identifiable {
+/// Codable so the feed survives relaunches (persisted as JSON in UserDefaults).
+struct AppNotification: Identifiable, Codable {
     let id: UUID
     var communityName: String
     var communityEmoji: String

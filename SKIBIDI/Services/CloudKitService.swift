@@ -59,8 +59,10 @@ final class CloudKitService {
         where Self.communityID(fromZoneName: zone.zoneID.zoneName) != nil {
             refs.append((zone.zoneID, true))
         }
-        // The shared DB throws when iCloud is unusable — treat as "no joined communities".
-        let sharedZones = (try? await container.sharedCloudDatabase.allRecordZones()) ?? []
+        // Propagate shared-DB failures instead of treating them as "no joined communities" —
+        // swallowing them made every joined team vanish for one bad tick, which the change
+        // feed would misread as "team deleted". An empty shared DB returns [] without error.
+        let sharedZones = try await container.sharedCloudDatabase.allRecordZones()
         for zone in sharedZones
         where Self.communityID(fromZoneName: zone.zoneID.zoneName) != nil {
             refs.append((zone.zoneID, false))
@@ -252,6 +254,34 @@ final class CloudKitService {
             return (s, container)
         }
         return (share, container)
+    }
+
+    // MARK: - Change subscriptions (M5 push)
+
+    private static let privateSubscriptionID = "private-db-changes"
+    private static let sharedSubscriptionID = "shared-db-changes"
+
+    /// Install silent-push subscriptions on both databases (idempotent), so the server pings
+    /// the app whenever a community zone changes and the UI refreshes without waiting for the
+    /// poll. Best-effort: failures are logged — the poll still covers us.
+    func ensureSubscriptions() async {
+        await ensureSubscription(id: Self.privateSubscriptionID, in: database, label: "private")
+        await ensureSubscription(id: Self.sharedSubscriptionID, in: container.sharedCloudDatabase, label: "shared")
+    }
+
+    private func ensureSubscription(id: String, in db: CKDatabase, label: String) async {
+        if (try? await db.subscription(for: id)) != nil { return }   // already installed
+        let subscription = CKDatabaseSubscription(subscriptionID: id)
+        let info = CKSubscription.NotificationInfo()
+        // Silent push: no banner, no sound, no user permission prompt — just "wake and fetch".
+        info.shouldSendContentAvailable = true
+        subscription.notificationInfo = info
+        do {
+            _ = try await db.save(subscription)
+            print("☁️ [CloudKit] \(label)-DB change subscription installed")
+        } catch {
+            print("❌ [CloudKit] \(label)-DB subscription failed:", error)
+        }
     }
 
     // MARK: - Leave / delete
