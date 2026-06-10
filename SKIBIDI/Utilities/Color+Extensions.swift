@@ -57,7 +57,7 @@ extension Color {
     static let metricSteps = Color(red: 0.25, green: 0.55, blue: 0.95)
     static let metricSleep = Color(red: 0.45, green: 0.40, blue: 0.85)
     static let metricHeart = Color(red: 0.90, green: 0.30, blue: 0.35)
-    static let metricHydration = Color(red: 0.20, green: 0.65, blue: 0.90)
+    static let metricRecovery = Color(red: 0.20, green: 0.65, blue: 0.90)
     
     // MARK: - Helpers
     static func energyColor(for score: Int) -> Color {
@@ -106,5 +106,5 @@ extension ShapeStyle where Self == Color {
     static var metricSteps: Color { .metricSteps }
     static var metricSleep: Color { .metricSleep }
     static var metricHeart: Color { .metricHeart }
-    static var metricHydration: Color { .metricHydration }
+    static var metricRecovery: Color { .metricRecovery }
 }
