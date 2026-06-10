@@ -307,7 +307,11 @@ class CommunityViewModel {
     /// selected), with the current user swapped in live (real location + real health). Members
     /// who never shared their location are excluded; paused members stay (frozen at last spot).
     var visibleMapMembers: [User] {
-        let base = selectedCommunity?.members ?? allMapMembers
+        var base = selectedCommunity?.members ?? allMapMembers
+        // My own pin is local (CoreLocation) — it shows whether or not I'm in any community yet.
+        if !base.contains(where: { $0.isCurrentUser }) {
+            base.append(currentUser)
+        }
         return base
             .map { $0.isCurrentUser ? currentUser : $0 }
             .filter { $0.locationSharing.hasData }   // .never → off the map; .paused/.active → shown
