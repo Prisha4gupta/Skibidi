@@ -5,7 +5,7 @@ import AuthenticationServices
 /// waveform logo throughout. What changes is the *top glyph* and *bottom control*, driven by the
 /// real Sign in with Apple state — not timers:
 ///   • Screen 1 → 2: logo only, then the "Sign in with Apple" button fades in.
-///   • Screen 3 (`.authenticating`): Face ID glyph on top, progress spinner at the bottom.
+///   • Screen 3 (`.authenticating`): progress spinner at the bottom.
 ///   • Screen 4 (`.succeeded`): checkmark glyph on top and bottom, then advance to profile.
 struct SplashAuthView: View {
     @Bindable var viewModel: OnboardingViewModel
@@ -62,17 +62,16 @@ struct SplashAuthView: View {
     @ViewBuilder
     private var topGlyph: some View {
         switch viewModel.authState {
-        case .authenticating:
-            glyphBadge(systemName: "faceid")
         case .succeeded:
             glyphBadge(systemName: "checkmark")
-        case .idle, .failed:
-            // Reserve the space so the logo doesn't shift when the glyph appears.
+        case .idle, .failed, .authenticating:
+            // No glyph while idle or authenticating (the system sheet is confirmation enough);
+            // reserve the space so the logo doesn't shift when the checkmark appears.
             Color.clear.frame(width: 44, height: 44)
         }
     }
 
-    /// The rounded black badge that frames the Face ID / checkmark glyph at the top.
+    /// The rounded black badge that frames the checkmark glyph at the top.
     private func glyphBadge(systemName: String) -> some View {
         Image(systemName: systemName)
             .font(.system(size: 20, weight: .semibold))

@@ -27,7 +27,9 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
     func application(_ application: UIApplication,
                      didReceiveRemoteNotification userInfo: [AnyHashable: Any],
                      fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
-        guard CKNotification(fromRemoteNotificationDictionary: userInfo) != nil else {
+        // UIKit hands the payload over as [AnyHashable: Any]; CKNotification wants [String: Any].
+        guard let payload = userInfo as? [String: Any],
+              CKNotification(fromRemoteNotificationDictionary: payload) != nil else {
             completionHandler(.noData)
             return
         }
