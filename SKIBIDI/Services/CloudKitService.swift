@@ -93,7 +93,10 @@ final class CloudKitService {
     /// Upsert my member record into EVERY community zone I'm part of (created or joined), so
     /// each community sees my latest data. No communities yet → nothing to sync. Never throws —
     /// failures are logged, because a sync hiccup shouldn't crash the app.
-    func syncMyData(_ user: User) async {
+    /// `sosCommunityIDs` controls which community zones carry my active SOS message — that's how
+    /// the "Send to" audience is enforced. `nil` = broadcast my SOS to every zone; a set = write it
+    /// only to those communities and clear it from the rest; an empty set = clear it everywhere.
+    func syncMyData(_ user: User, sosCommunityIDs: Set<UUID>? = nil) async {
         do {
             let status = try await container.accountStatus()
             guard status == .available else {
@@ -106,8 +109,16 @@ final class CloudKitService {
                 return
             }
             for ref in refs {
+                // Strip my SOS out of any zone that isn't a chosen target, so the message reaches
+                // exactly the audience I picked (and nobody else).
+                var scoped = user
+                if let ids = sosCommunityIDs,
+                   let cid = Self.communityID(fromZoneName: ref.zoneID.zoneName),
+                   !ids.contains(cid) {
+                    scoped.sosMessage = nil
+                }
                 do {
-                    try await upsertMyMemberRecord(from: user,
+                    try await upsertMyMemberRecord(from: scoped,
                                                    database: databaseFor(isOwned: ref.isOwned),
                                                    zoneID: ref.zoneID)
                 } catch {
@@ -248,6 +259,9 @@ final class CloudKitService {
         record["locationSharing"] = user.locationSharing.rawValue
         record["healthSharing"]   = user.healthSharing.rawValue
         record["fitnessSharing"]  = user.fitnessSharing.rawValue
+        // Emergency SOS. Setting `nil` deletes the field from this zone's record, so standing the
+        // SOS down (or never targeting this community) clears the red pin for that audience.
+        record["sosMessage"]      = user.sosMessage
 
         let h = user.healthSnapshot
 
@@ -339,6 +353,7 @@ final class CloudKitService {
             locationSharing: (record["locationSharing"] as? String).flatMap(SharingState.init) ?? .active,
             healthSharing: (record["healthSharing"] as? String).flatMap(SharingState.init) ?? .active,
             fitnessSharing: (record["fitnessSharing"] as? String).flatMap(SharingState.init) ?? .active,
+            sosMessage: record["sosMessage"] as? String,
             ringColor: (record["ringColor"] as? String).flatMap(User.RingColor.init) ?? .pink
         )
     }

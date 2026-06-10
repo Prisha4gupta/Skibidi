@@ -9,7 +9,10 @@ class CommunityViewModel {
     var communities: [Community]
     var notifications: [AppNotification]
     var currentUser: User
-    var activeSOSMessages: [UUID: String] = [:]
+    /// Which audience my active SOS targets, mirroring the "Send to" picker: `nil` while
+    /// `currentUser.sosMessage != nil` means broadcast to all groups & people; a community id
+    /// means that group only. Drives `currentSOSTargets`, which scopes every CloudKit sync.
+    @ObservationIgnored private var sosTargetCommunityID: UUID?
     /// Communities fetched live from CloudKit (created + joined), with their members. Mirrored
     /// into `communities` as UI rows by `rebuildCloudCommunityRows()`.
     private var cloudCommunities: [CloudKitService.CloudCommunity] = []
@@ -87,7 +90,7 @@ class CommunityViewModel {
         ) { [weak self] _ in
             Task { @MainActor [weak self] in
                 guard let self else { return }
-                await self.cloudKit.syncMyData(self.currentUser)
+                await self.cloudKit.syncMyData(self.currentUser, sosCommunityIDs: self.currentSOSTargets)
                 await self.refreshCloudCommunities()
             }
         }
@@ -124,7 +127,7 @@ class CommunityViewModel {
             // writing — otherwise sync would overwrite it with this device's default.
             await refreshCloudCommunities()
             // Push my freshly-loaded real data (health + location + name) up to my iCloud DB.
-            await cloudKit.syncMyData(currentUser)
+            await cloudKit.syncMyData(currentUser, sosCommunityIDs: currentSOSTargets)
             // Re-read so my freshly-written record shows in the group.
             await refreshCloudCommunities()
             // Keep steps (and other metrics) live: re-fetch whenever HealthKit reports new
@@ -170,7 +173,7 @@ class CommunityViewModel {
             // or an earlier sync failed — write my record now and re-fetch, so I show up without
             // waiting for a relaunch. Idempotent; at worst it retries on the next poll tick.
             if fetched.contains(where: { c in !c.members.contains(where: { $0.isCurrentUser }) }) {
-                await cloudKit.syncMyData(currentUser)
+                await cloudKit.syncMyData(currentUser, sosCommunityIDs: currentSOSTargets)
                 fetched = try await cloudKit.fetchCommunities()
                 markMyRecords(in: &fetched)
             }
@@ -243,7 +246,7 @@ class CommunityViewModel {
         guard !trimmed.isEmpty else { return }
         currentUser.name = trimmed
         UserDefaults.standard.set(trimmed, forKey: Self.displayNameKey)
-        Task { await cloudKit.syncMyData(currentUser) }
+        Task { await cloudKit.syncMyData(currentUser, sosCommunityIDs: currentSOSTargets) }
     }
 
     // MARK: - Sharing toggles (M6)
@@ -256,7 +259,7 @@ class CommunityViewModel {
 
     private func resyncSharing() {
         Task {
-            await cloudKit.syncMyData(currentUser)
+            await cloudKit.syncMyData(currentUser, sosCommunityIDs: currentSOSTargets)
             await refreshCloudCommunities()
         }
     }
@@ -266,7 +269,7 @@ class CommunityViewModel {
     func createCommunity(name: String) async -> ShareSheetData? {
         do {
             let (_, share, container) = try await cloudKit.createCommunity(named: name)
-            await cloudKit.syncMyData(currentUser)   // put my record in the new zone
+            await cloudKit.syncMyData(currentUser, sosCommunityIDs: currentSOSTargets)   // put my record in the new zone
             await refreshCloudCommunities()
             showingCreateCommunity = false
             return ShareSheetData(share: share, container: container)
@@ -354,20 +357,40 @@ class CommunityViewModel {
         return result
     }
 
+    /// SOS to render on a pin. My own comes from the local source of truth (`currentUser`) so it
+    /// shows instantly; everyone else's comes from their CloudKit-synced record, which only carries
+    /// the message if I'm in an audience the sender chose.
     func sosMessage(for user: User) -> String? {
-        activeSOSMessages[user.id]
+        user.id == currentUser.id ? currentUser.sosMessage : user.sosMessage
     }
 
     /// True while the current user has an active SOS broadcast (drives the "Cancel SOS" affordance).
     var isCurrentUserSOSActive: Bool {
-        activeSOSMessages[currentUser.id] != nil
+        currentUser.sosMessage != nil
+    }
+
+    /// The community zones my active SOS should be written into (see `CloudKitService.syncMyData`):
+    /// empty = no SOS anywhere, `nil` = broadcast to all, a single id = that group only.
+    private var currentSOSTargets: Set<UUID>? {
+        guard currentUser.sosMessage != nil else { return [] }
+        if let id = sosTargetCommunityID { return [id] }
+        return nil
+    }
+
+    /// Pushes my current SOS state to CloudKit scoped to its chosen audience, then refreshes so the
+    /// change (or stand-down) is reflected locally.
+    private func syncSOS() async {
+        await cloudKit.syncMyData(currentUser, sosCommunityIDs: currentSOSTargets)
+        await refreshCloudCommunities()
     }
 
     /// Clears the current user's active SOS, so the map pin drops the red override and returns to
-    /// its energy color. There was previously no way to stand down an SOS — once sent it stayed
-    /// active for the whole session.
+    /// its energy color — and removes the message from CloudKit so it disappears for everyone it
+    /// was sent to, not just locally.
     func cancelSOS() {
-        activeSOSMessages[currentUser.id] = nil
+        currentUser.sosMessage = nil
+        sosTargetCommunityID = nil
+        Task { await syncSOS() }
     }
 
     // MARK: - Actions
@@ -489,7 +512,10 @@ class CommunityViewModel {
             )
         }
 
-        activeSOSMessages[currentUser.id] = trimmedMessage
+        // Set the message + audience locally (instant red pin for me), then push to CloudKit so the
+        // chosen people see it too. `communityID == nil` broadcasts; otherwise just that group.
+        currentUser.sosMessage = trimmedMessage
+        sosTargetCommunityID = communityID
 
         for index in communities.indices {
             if communityID == nil || communities[index].id == communityID {
@@ -504,6 +530,8 @@ class CommunityViewModel {
         showingYourProfile = false
         showingCommunitySheet = false
         showingNotifications = false
+
+        Task { await syncSOS() }
     }
 }
 

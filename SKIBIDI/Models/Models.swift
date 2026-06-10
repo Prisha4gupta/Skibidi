@@ -73,6 +73,12 @@ struct User: Identifiable, Hashable {
     var healthSharing: SharingState = .active
     var fitnessSharing: SharingState = .active
 
+    /// Active emergency SOS message broadcast by this member, or `nil` when none. Synced to
+    /// CloudKit per-community: the audience the sender picked in "Send to" is enforced by *which*
+    /// community zones this field gets written into (see `CloudKitService.syncMyData`), so the
+    /// chosen people read the red pin + message and everyone else sees `nil`.
+    var sosMessage: String? = nil
+
     var coordinate: CLLocationCoordinate2D {
         CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
     }
