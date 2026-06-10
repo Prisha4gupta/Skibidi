@@ -97,6 +97,9 @@ private struct PermissionRow: View {
                 .labelsHidden()
                 .tint(.activeGreen)
                 .disabled(!isEnabled)
+                // The visible label is the row's `Text(title)`, but `labelsHidden()` leaves the
+                // toggle itself nameless to Voice Control / VoiceOver — name it after the row.
+                .accessibilityLabel(title)
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)

@@ -55,6 +55,7 @@ struct CreateCommunityView: View {
                             .font(.system(size: 14, weight: .semibold))
                             .foregroundStyle(.secondary)
                     }
+                    .accessibilityLabel("Close")
                 }
 
                 ToolbarItem(placement: .confirmationAction) {

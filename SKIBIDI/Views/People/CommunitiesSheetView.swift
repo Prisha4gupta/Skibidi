@@ -38,7 +38,8 @@ struct CommunitiesSheetView: View {
                             }
                         }
                 }
-                
+                .accessibilityLabel("Notifications")
+
                 Button {
                     viewModel.showingCreateCommunity = true
                 } label: {
@@ -49,6 +50,7 @@ struct CommunitiesSheetView: View {
                         .background(Color(.systemGray5))
                         .clipShape(Circle())
                 }
+                .accessibilityLabel("New community")
             }
             .padding(.horizontal, 20)
             .padding(.top, 16)
@@ -122,6 +124,7 @@ struct NotificationSheetView: View {
                         .background(Color(.systemGray5))
                         .clipShape(Circle())
                 }
+                .accessibilityLabel("Close")
             }
             .padding(.horizontal, 20)
             .padding(.top, 16)

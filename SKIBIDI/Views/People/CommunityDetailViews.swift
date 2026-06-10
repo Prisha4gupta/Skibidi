@@ -29,6 +29,7 @@ struct PeopleListView: View {
                         .background(Color(.systemGray5))
                         .clipShape(Circle())
                 }
+                .accessibilityLabel("Invite people")
 
                 Button {
                     withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
@@ -42,6 +43,7 @@ struct PeopleListView: View {
                         .background(Color(.systemGray5))
                         .clipShape(Circle())
                 }
+                .accessibilityLabel("Close")
             }
             .padding(.horizontal, 20)
             .padding(.top, 16)
@@ -143,6 +145,7 @@ struct CommunityDashboardView: View {
                         .background(Color(.systemGray5))
                         .clipShape(Circle())
                 }
+                .accessibilityLabel("Invite people")
 
                 Button {
                     withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
@@ -156,6 +159,7 @@ struct CommunityDashboardView: View {
                         .background(Color(.systemGray5))
                         .clipShape(Circle())
                 }
+                .accessibilityLabel("Close")
             }
             .padding(.horizontal, 20)
             .padding(.top, 16)

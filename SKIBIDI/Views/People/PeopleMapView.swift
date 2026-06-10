@@ -22,6 +22,19 @@ struct PeopleMapView: View {
                                     viewModel.selectMember(member)
                                 }
                             }
+                            // The pin is a tap-gesture view, not a Button, so it's invisible to
+                            // Voice Control / VoiceOver. Collapse it into one element named after
+                            // the member (with SOS noted), mark it a button, and give it an explicit
+                            // activation action — `.onTapGesture` alone isn't an accessibility action.
+                            // Lets the user say "Tap <member name>".
+                            .accessibilityElement(children: .ignore)
+                            .accessibilityAddTraits(.isButton)
+                            .accessibilityLabel(sos == nil ? member.name : "\(member.name), SOS active")
+                            .accessibilityAction {
+                                withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+                                    viewModel.selectMember(member)
+                                }
+                            }
                             // `User.==` compares by `id` only, so SwiftUI treats a member whose
                             // energy/health just loaded as unchanged and skips redrawing the pin —
                             // leaving it on the stale launch value (e.g. red) until some other
@@ -48,11 +61,11 @@ struct PeopleMapView: View {
                             viewModel.showingEmergencySOS = true
                         }
 
-                        mapButton(icon: "gearshape.fill") {
+                        mapButton(icon: "gearshape.fill", label: "Settings") {
                             showingSettings = true
                         }
 
-                        mapButton(icon: "location.fill") {
+                        mapButton(icon: "location.fill", label: "Recenter map") {
                             withAnimation {
                                 viewModel.recenterOnCurrentUser()
                             }
@@ -118,7 +131,9 @@ struct PeopleMapView: View {
         }
     }
     
-    private func mapButton(icon: String, action: @escaping () -> Void) -> some View {
+    /// `label` is the spoken name for Voice Control / VoiceOver, since the button shows only an
+    /// icon and would otherwise be unaddressable by name.
+    private func mapButton(icon: String, label: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: icon)
                 .font(.system(size: 16, weight: .semibold))
@@ -128,6 +143,7 @@ struct PeopleMapView: View {
                 .clipShape(Circle())
                 .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 2)
         }
+        .accessibilityLabel(label)
     }
 
     private func emergencySOSButton(action: @escaping () -> Void) -> some View {

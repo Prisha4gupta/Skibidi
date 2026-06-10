@@ -35,6 +35,7 @@ struct MemberProfileView: View {
                         .background(Color(.systemGray5))
                         .clipShape(Circle())
                 }
+                .accessibilityLabel("Close")
             }
             .padding(.horizontal, 20)
             .padding(.top, 16)
@@ -164,6 +165,7 @@ struct YourProfileView: View {
                         .background(Color(.systemGray5))
                         .clipShape(Circle())
                 }
+                .accessibilityLabel("Edit name")
 
                 Spacer()
                 
@@ -179,6 +181,7 @@ struct YourProfileView: View {
                         .background(Color(.systemGray5))
                         .clipShape(Circle())
                 }
+                .accessibilityLabel("Close")
             }
             .padding(.horizontal, 20)
             .padding(.top, 16)
